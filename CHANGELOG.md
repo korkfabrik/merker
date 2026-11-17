@@ -2,6 +2,10 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.0.1
+
+Schickt Home Assistant nach einer eigenen Änderung genau den Stand zurück, der schon angezeigt wird, zeichnet die App die Liste nicht mehr neu. Vorher wurde dabei eine Zeile ersetzt, die man gerade wischt. Wer zwei Aufgaben schnell hintereinander erledigte, verlor so manchmal das zweite Wischen.
+
 ## Version 1.0.0
 
 Erste Version im Repository. Inhalt wie 0.39.2, dazu: App im Ordner `app/`, Tests mit nachgebautem Home-Assistant-Server in `tests/`, Regeln für Claude Code in `CLAUDE.md`, Einspielen nach Home Assistant über `ha/merker_update.sh`.

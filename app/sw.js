@@ -1,7 +1,7 @@
 // Service Worker: liefert die App-Dateien aus dem Cache, damit Merker auch ohne Netz startet.
 // Aktualisierung: Jede Version hat einen eigenen Cache, der bei der Installation komplett und am HTTP-Cache vorbei gefüllt wird.
 // CACHE_VERSION bei jeder Änderung an den App-Dateien erhöhen und mit js/version.js gleich halten.
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.0.1';
 const CACHE_NAME = `merker-${CACHE_VERSION}`;
 
 const ASSETS = [

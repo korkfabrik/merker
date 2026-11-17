@@ -147,6 +147,13 @@ const server = http.createServer((req, res) => {
     res.writeHead(200).end('ok');
     return;
   }
+  if (url.pathname === '/__mock/echo' && req.method === 'POST') {
+    // Unveränderten Stand einer Liste noch einmal schicken, wie HA nach einer eigenen Änderung
+    const id = url.searchParams.get('entity');
+    for (const s of sockets) for (const [subId, entity] of s.itemSubs) if (entity === id) send(s.ws, { id: subId, type: 'event', event: { items: lists[id].items } });
+    res.writeHead(200).end('ok');
+    return;
+  }
   if (url.pathname === '/__mock/noise' && req.method === 'POST') {
     // Zustandsänderung einer fremden Entität: darf Merker nicht neu zeichnen lassen.
     for (const s of sockets) if (s.entitiesSubId) send(s.ws, { id: s.entitiesSubId, type: 'event', event: { c: { 'sensor.x': { '+': { s: String(Math.random()) } } } } });

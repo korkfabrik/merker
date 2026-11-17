@@ -190,7 +190,12 @@ export class Repository {
   #showServer(entityId, items) {
     this.#server[entityId] = items;
     this.#serverAt[entityId] = Date.now();
-    this.store.setItems(entityId, overlay(entityId, items, this.#queue));
+    const shown = overlay(entityId, items, this.#queue);
+    // Schickt HA genau das, was schon angezeigt wird (zum Beispiel die Antwort auf die eigene Änderung), nicht neu zeichnen.
+    // Sonst würde eine Zeile ersetzt, die man gerade wischt.
+    const state = this.store.get();
+    if (state.loaded[entityId] && !state.fromCache && JSON.stringify(state.items[entityId]) === JSON.stringify(shown)) return;
+    this.store.setItems(entityId, shown);
   }
 
   // Kann der Auftrag jetzt raus? "wait": Liste ist (noch) nicht verfügbar, zum Beispiel kurz nach einem Neustart von Home Assistant.
