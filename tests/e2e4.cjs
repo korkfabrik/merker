@@ -36,11 +36,21 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   const gone = (text) => page.waitForFunction((t) => ![...document.querySelectorAll('#content > ul .item-title')].some((e) => e.textContent === t), text);
   const present = (text) => page.waitForFunction((t) => [...document.querySelectorAll('#content > ul .item-title')].some((e) => e.textContent === t), text);
 
+  // Position einer Zeile. Zeichnet die App die Liste gerade neu (zum Beispiel wenn HA nach dem Verschieben
+  // die Reihenfolge zurückschickt), liefert boundingBox() für die alte, schon entfernte Zeile null. Dann neu suchen.
+  async function boxOf(locator) {
+    for (let i = 0; i < 50; i++) {
+      const box = await locator.boundingBox();
+      if (box) return box;
+      await sleep(20);
+    }
+    throw new Error('Zeile nicht sichtbar');
+  }
   // fraction > 0: nach rechts, < 0: nach links. hold = true lässt den Finger unten.
   async function swipe(locator, fraction, hold = false) {
     await locator.waitFor({ state: 'visible' });
     await settle();
-    const box = await locator.boundingBox();
+    const box = await boxOf(locator);
     const y = box.y + box.height / 2;
     const x0 = fraction > 0 ? box.x + 24 : box.x + box.width - 24;
     const x1 = x0 + box.width * fraction;
@@ -55,7 +65,7 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   async function drag(handle, dy) {
     await settle();
     await sleep(250);
-    const box = await handle.boundingBox();
+    const box = await boxOf(handle);
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
     await hold(x, y);
@@ -200,8 +210,8 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   const last = before.at(-1);
   const lastUid = await rows(last).getAttribute('data-uid');
   n0 = await count();
-  const lastBox = await rows(last).boundingBox();
-  const firstBox = await page.locator('li.swipe').first().boundingBox();
+  const lastBox = await boxOf(rows(last));
+  const firstBox = await boxOf(page.locator('li.swipe').first());
   await drag(rows(last).locator('.drag-handle'), firstBox.y - lastBox.y - 4);
   c = await lastCallAfter(n0);
   assert.deepEqual([c.service, c.data], ['move', { uid: lastUid, previous_uid: null }]);
@@ -214,8 +224,8 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   const now1 = await titles();
   const firstUid = await rows(now1[0]).getAttribute('data-uid');
   const targetUid = await rows(now1[2]).getAttribute('data-uid');
-  const b0 = await rows(now1[0]).boundingBox();
-  const b2 = await rows(now1[2]).boundingBox();
+  const b0 = await boxOf(rows(now1[0]));
+  const b2 = await boxOf(rows(now1[2]));
   n0 = await count();
   await drag(rows(now1[0]).locator('.drag-handle'), b2.y + b2.height - (b0.y + b0.height / 2) - 2);
   c = await lastCallAfter(n0);
@@ -237,8 +247,8 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   // 12. Fehler beim Verschieben: zurück zur alten Reihenfolge, Meldung
   await post('/__mock/fail-next');
   const orderBefore = await titles();
-  const bb0 = await rows(orderBefore[0]).boundingBox();
-  const bb1 = await rows(orderBefore[1]).boundingBox();
+  const bb0 = await boxOf(rows(orderBefore[0]));
+  const bb1 = await boxOf(rows(orderBefore[1]));
   await drag(rows(orderBefore[0]).locator('.drag-handle'), bb1.y + bb1.height - (bb0.y + bb0.height / 2) - 2);
   await page.waitForFunction(() => /Nicht verschoben/.test(document.querySelector('.snackbar').textContent));
   await page.waitForFunction((o) => [...document.querySelectorAll('#content .item-title')].map((e) => e.textContent).join('|') === o, orderBefore.join('|'));
