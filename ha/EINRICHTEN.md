@@ -34,7 +34,7 @@ sequence:
   - action: shell_command.merker_update
     response_variable: result
     continue_on_error: true
-  - action: notify.mobile_app_p9p
+  - action: notify.mobile_app_<dein_handy>
     data:
       title: 📋 Merker
       message: >-
