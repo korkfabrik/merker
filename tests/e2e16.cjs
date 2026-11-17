@@ -1,0 +1,25 @@
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+const cp = require('node:child_process');
+const APP = 'http://localhost:8123/local/merker/index.html';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ok = (n) => console.log('OK  ', n);
+(async () => {
+  const browser = await chromium.launch();
+  const page = await (await browser.newContext({ locale: 'de-DE', viewport: { width: 412, height: 860 } })).newPage();
+  await page.goto(APP);
+  await page.waitForSelector('.list-tile');
+  await page.waitForFunction(() => localStorage.getItem('merker.snapshot'));
+  await page.evaluate(() => { const t = JSON.parse(localStorage.getItem('merker.tokens')); t.expires = 1; localStorage.setItem('merker.tokens', JSON.stringify(t)); });
+  cp.execSync('pkill -f "node mock-h[a].mjs" || true');
+  await sleep(500);
+  await page.goto(APP);
+  await page.waitForSelector('.list-tile', { timeout: 8000 });
+  await page.waitForFunction(() => /(Keine Verbindung|Verbinde).*Stand/.test(document.querySelector('#banner').innerText), null, { timeout: 8000 });
+  assert.equal(await page.locator('.banner-error').count(), 0);
+  ok('Token abgelaufen und kein Netz: gespeicherter Stand mit Hinweis, kein Fehlerband');
+  cp.spawn('node', ['mock-ha.mjs'], { cwd: __dirname, detached: true, stdio: 'ignore' }).unref();
+  await page.waitForFunction(() => document.querySelector('#banner').hidden, null, { timeout: 25000 });
+  ok('Server wieder da: verbindet von selbst');
+  await browser.close();
+})().catch((e) => { console.log('FEHLER:', e.message); process.exit(1); });

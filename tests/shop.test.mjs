@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { shopIcon, shopSection } from '../app/js/shopicons.js';
+const cases = { Teelichter: '🕯️', Rindenmulch: '🪴', Ketchup: '🍅', Senf: '🥫', Backpapier: '🧻', Kokosmilch: '🥫', Orangensaft: '🧃', Milchreis: '🍚', Eisbergsalat: '🥬', Vollmilch: '🥛', Käse: '🧀', Kaese: '🧀', Vollkornbrot: '🍞', Speiseeis: '🍦', 'Toilet paper': '🧻', Steinpilze: '🍄', Xyz: null };
+for (const [name, emoji] of Object.entries(cases)) assert.equal(shopIcon(name), emoji, name);
+assert.equal(shopSection('Bananen'), 'produce');
+assert.equal(shopSection('Xyz'), 'other');
+assert.equal(shopSection('Xyz', '🍕'), 'frozen');
+assert.equal(shopSection('Ketchup'), 'pantry');
+assert.equal(shopSection('Ketchup', null, 'drinks'), 'drinks');
+assert.equal(shopSection('Ketchup', null, 'quatsch'), 'pantry');
+console.log('shop: alle Tests bestanden');

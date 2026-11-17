@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { splitLines } from '../app/js/multiline.js';
+const texts = (s) => splitLines(s).map((l) => l.text);
+assert.deepEqual(texts('Milch\nEier\n\nBrot\n'), ['Milch', 'Eier', 'Brot']);
+assert.deepEqual(texts('- Milch\n- [ ] Eier\n* Brot\n• Butter\n1. Käse\n2) Wurst\n☐ Salz\n✅ Zucker\n- [x] Mehl'), ['Milch', 'Eier', 'Brot', 'Butter', 'Käse', 'Wurst', 'Salz', 'Zucker', 'Mehl']);
+assert.deepEqual(texts('[08.11., 14:32] Philine: Milch\n[08.11., 14:33] Philine: Eier'), ['Milch', 'Eier']);
+assert.deepEqual(texts('08.11.26, 14:32 - Philine: Milch\n08.11.26, 14:33 - Philine: Brot'), ['Milch', 'Brot']);
+assert.deepEqual(splitLines('! Arzt anrufen\n❗ Steuer\nmilch\nMilch'), [{ text: 'Arzt anrufen', prio: true }, { text: 'Steuer', prio: true }, { text: 'milch', prio: false }]);
+assert.deepEqual(texts('+49 170 1234567\n1.5 kg Mehl\n-5 Grad prüfen\nUhrzeit: 14:00 Arzt'), ['+49 170 1234567', '1.5 kg Mehl', '-5 Grad prüfen', 'Uhrzeit: 14:00 Arzt']);
+assert.deepEqual(texts('Milch\r\nEier'), ['Milch', 'Eier']);
+assert.deepEqual(texts(''), []);
+console.log('multiline: alle Tests bestanden');

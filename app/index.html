@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content="#fdfbff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)" />
+    <title>Merker</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icon-192.png" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <button id="btn-back" class="icon-btn" type="button" data-i18n-label="header.back" aria-label="Zurück" hidden>
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z" /></svg>
+        </button>
+        <h1 id="view-title">Merker</h1>
+        <button id="btn-week" class="icon-btn" type="button" data-i18n-label="header.week" aria-label="Woche" hidden></button>
+        <button id="btn-search" class="icon-btn" type="button" data-i18n-label="header.search" aria-label="Suchen" hidden></button>
+        <button id="btn-view" class="icon-btn" type="button" data-i18n-label="header.listView" aria-label="Listenansicht" hidden></button>
+        <button id="btn-share" class="icon-btn" type="button" data-i18n-label="header.shareList" aria-label="Liste teilen" hidden></button>
+        <button id="btn-sort" class="icon-btn" type="button" data-i18n-label="header.reorder" aria-label="Reihenfolge ändern" aria-pressed="false" hidden></button>
+        <button id="btn-settings" class="icon-btn" type="button" data-i18n-label="header.settings" aria-label="Einstellungen" hidden>
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.488.488 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z" /></svg>
+        </button>
+      </header>
+      <div id="banner" class="banner" role="status" hidden></div>
+      <div id="top-slot"></div>
+      <button id="fab" class="fab press" type="button" data-i18n-label="fab.newTask" aria-label="Neue Aufgabe" hidden></button>
+      <div id="pull-hint" aria-hidden="true"></div>
+      <main id="content"><p class="empty" data-i18n="app.starting">Merker startet …</p></main>
+      <div id="bottom-slot"></div>
+    </div>
+    <div id="snackbar" class="snackbar" role="status" aria-live="polite" hidden></div>
+    <noscript>Merker braucht JavaScript.</noscript>
+    <script src="js/boot.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

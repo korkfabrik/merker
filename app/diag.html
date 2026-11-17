@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merker Diagnose</title>
+<style>
+  body { font: 16px system-ui, sans-serif; margin: 16px; background: #121316; color: #e3e2e9; }
+  h1 { font-size: 22px; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #1b1c20; padding: 12px; border-radius: 12px; font-size: 14px; }
+  button { margin: 8px 8px 8px 0; padding: 14px 18px; border: 0; border-radius: 999px; background: #b2c5ff; color: #022b78; font: inherit; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Merker Diagnose</h1>
+<pre id="out">Prüfe …</pre>
+<button id="reset">Reparieren (neu aufbauen)</button>
+<button id="open">App öffnen</button>
+<script>
+(async function () {
+  var out = document.getElementById('out');
+  var lines = [];
+  function add(t) { lines.push(t); out.textContent = lines.join('\n'); }
+  var assets = [];
+
+  async function loadAssets() {
+    var r = await fetch('sw.js', { cache: 'reload' });
+    var t = await r.text();
+    var m = t.match(/CACHE_VERSION = '([^']+)'/);
+    add('sw.js auf dem Server: Version ' + (m ? m[1] : '?'));
+    assets = (t.match(/'\.\/[^']*'/g) || []).map(function (x) { return x.slice(1, -1); });
+    return assets;
+  }
+
+  // Holt alle Dateien am Browser-Cache vorbei und meldet Fehler. Das erneuert auch den Browser-Cache.
+  async function checkAssets() {
+    var bad = 0;
+    for (var i = 0; i < assets.length; i++) {
+      try {
+        var r = await fetch(assets[i], { cache: 'reload' });
+        if (!r.ok) { bad++; add('FEHLT oder Fehler: ' + assets[i] + ' (' + r.status + ')'); }
+      } catch (e) { bad++; add('FEHLER beim Laden: ' + assets[i] + ' ' + e.message); }
+    }
+    add('Dateien geprüft: ' + assets.length + ', Probleme: ' + bad);
+    return bad;
+  }
+
+  // Gleiche Prüfung wie bei der Installation des Service Workers: Cache.add je Datei, mit genauer Fehlermeldung.
+  async function cacheTest() {
+    var c = await caches.open('merker-test');
+    var bad = 0;
+    for (var i = 0; i < assets.length; i++) {
+      try { await c.add(new Request(assets[i], { cache: 'reload' })); }
+      catch (e) { bad++; add('Cache-Test FEHLER: ' + assets[i] + ': ' + e.message); }
+    }
+    await caches.delete('merker-test');
+    add('Cache-Test: ' + (assets.length - bad) + ' von ' + assets.length + ' in Ordnung');
+  }
+
+  async function status() {
+    add('Adresse: ' + location.href);
+    add('Anzeige: ' + (matchMedia('(display-mode: standalone)').matches ? 'installierte App' : 'Browser-Tab'));
+    try {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      add('Service Worker: ' + (regs.length ? regs.map(function (r) { return 'aktiv=' + (r.active && r.active.state) + ' wartend=' + (r.waiting && r.waiting.state) + ' ' + (r.active ? r.active.scriptURL : ''); }).join(', ') : 'keiner'));
+      var keys = await caches.keys();
+      add('Caches: ' + (keys.join(', ') || 'keine'));
+      for (var k = 0; k < keys.length; k++) {
+        var c = await caches.open(keys[k]);
+        var n = (await c.keys()).length;
+        add('  ' + keys[k] + ': ' + n + ' Dateien');
+      }
+    } catch (e) { add('Fehler Service Worker/Cache: ' + e.message); }
+  }
+
+  async function repair() {
+    add('--- Reparatur ---');
+    // Nur Merker selbst: HA-Frontend und andere Apps unter derselben Adresse bleiben unberührt
+    var scope = new URL('./', location.href).href;
+    var regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.filter(function (r) { return r.scope === scope; }).map(function (r) { return r.unregister(); }));
+    var keys = await caches.keys();
+    await Promise.all(keys.filter(function (k) { return k.indexOf('merker-') === 0; }).map(function (k) { return caches.delete(k); }));
+    add('Alte Service Worker und Caches von Merker entfernt.');
+    await loadAssets();
+    var bad = await checkAssets();
+    await cacheTest();
+    try {
+      var reg = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+      var worker = reg.installing || reg.waiting || reg.active;
+      add('Service Worker angemeldet, Zustand: ' + (worker && worker.state));
+      await new Promise(function (resolve) {
+        if (!worker || worker.state === 'activated') return resolve();
+        worker.addEventListener('statechange', function () { add('  Zustand: ' + worker.state); if (worker.state === 'activated' || worker.state === 'redundant') resolve(); });
+        setTimeout(resolve, 20000);
+      });
+      add('Ergebnis: ' + (worker && worker.state) + (worker && worker.state === 'redundant' ? ' (Installation fehlgeschlagen, siehe Dateien oben)' : ''));
+    } catch (e) { add('Anmeldung fehlgeschlagen: ' + e.message); }
+    var after = await caches.keys();
+    for (var k = 0; k < after.length; k++) add('  ' + after[k] + ': ' + (await (await caches.open(after[k])).keys()).length + ' Dateien');
+    add(bad === 0 ? 'Fertig. Öffne die App jetzt zwei Mal.' : 'Fertig, aber es gibt Probleme mit Dateien. Bitte Screenshot schicken.');
+  }
+
+  await status();
+  try { await loadAssets(); await checkAssets(); await cacheTest(); } catch (e) { add('Fehler: ' + e.message); }
+  add('Bereit. Mit "Reparieren" wird alles neu aufgebaut.');
+  document.getElementById('reset').onclick = function () { repair().catch(function (e) { add('Fehler: ' + e.message); }); };
+  document.getElementById('open').onclick = function () { location.href = 'index.html'; };
+})();
+</script>
+</body>
+</html>

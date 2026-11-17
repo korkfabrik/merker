@@ -1,0 +1,100 @@
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+const BASE = 'http://localhost:8123';
+const APP = `${BASE}/local/merker/index.html`;
+const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
+const calls = () => getJson('/__mock/calls');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ok = (n) => console.log('OK  ', n);
+const pad = (n) => String(n).padStart(2, '0');
+const dayStr = (offset) => { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+(async () => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext({ locale: 'de-DE', viewport: { width: 412, height: 860 }, hasTouch: true, permissions: ['clipboard-read', 'clipboard-write'] });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await fetch(`${BASE}/__mock/add-item?entity=todo.einkaufsliste&summary=${encodeURIComponent('Handwerker')}&due=${dayStr(3)}&desc=${encodeURIComponent('Ruf Herrn Meier an 0170 1234567 oder siehe https://example.com/angebot.pdf, mail a.b@firma.de, Termin 2026-10-30')}`, { method: 'POST' });
+  await page.goto(APP);
+  await page.waitForSelector('.list-tile');
+
+  // A. Filter auf der Startseite
+  assert.equal(await page.locator('.filter-chip').count(), 3);
+  assert.deepEqual(await page.locator('.filter-chip').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label').split(':')[0])), ['Wichtig', 'Überfällig', 'Diese Woche']);
+  const tops = await page.locator('.filter-chip').evaluateAll((els) => new Set(els.map((e) => Math.round(e.getBoundingClientRect().top))).size);
+  assert.equal(tops, 1);
+  const base = await page.locator('.section-title').first().textContent();
+  assert.match(base, /Fällig/);
+  await page.locator('.filter-chip', { hasText: 'Diese Woche' }).click();
+  assert.match(await page.locator('.section-title').first().textContent(), /Diese Woche \(\d+\)/);
+  assert.ok((await page.locator('.due-list .item-title').allInnerTexts()).includes('Handwerker'));
+  assert.equal(await page.locator('.filter-chip[aria-pressed=true]').count(), 1);
+  await page.locator('.filter-chip', { hasText: 'Diese Woche' }).click();
+  assert.equal((await page.locator('.section-title').first().textContent()).trim(), base.trim());
+  assert.ok(!(await page.locator('.due-list .item-title').allInnerTexts()).includes('Handwerker'));
+  await page.locator('.filter-chip', { hasText: '❗' }).click();
+  assert.ok((await page.locator('.due-list .item-title').allInnerTexts()).some((t) => t.includes('Arzt anrufen')));
+  await page.locator('.filter-chip', { hasText: '❗' }).click();
+  ok('Filter: Diese Woche und Prio filtern über alle Listen, nochmal Antippen hebt auf');
+
+  // B. Liste öffnen, Links als Knöpfe, Schnell-Datum
+  await page.locator('.list-tile', { hasText: 'Einkaufsliste' }).click();
+  await page.locator('li.swipe', { hasText: 'Handwerker' }).click();
+  await page.waitForSelector('.sheet');
+  const links = await page.locator('.link-chip').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+  assert.deepEqual(links, ['https://example.com/angebot.pdf', 'mailto:a.b@firma.de', 'tel:01701234567']);
+  ok('Dialog zeigt Link, E-Mail und Telefonnummer als Knöpfe, Datum "2026-10-30" nicht');
+  await page.locator('.quick-chip', { hasText: 'Morgen' }).click();
+  assert.equal(await page.locator('.sheet input[name=due]').inputValue(), dayStr(1));
+  await page.locator('.quick-chip', { hasText: 'Heute' }).click();
+  assert.equal(await page.locator('.sheet input[name=due]').inputValue(), dayStr(0));
+  await page.locator('.quick-chip', { hasText: 'Nächste Woche' }).click();
+  const nm = await page.locator('.sheet input[name=due]').inputValue();
+  assert.equal(new Date(nm + 'T12:00:00').getDay(), 1);
+  assert.ok(nm > dayStr(0));
+  await page.locator('.quick-chip', { hasText: 'Keine' }).click();
+  assert.equal(await page.locator('.sheet input[name=due]').inputValue(), '');
+  await page.locator('.quick-chip', { hasText: 'Morgen' }).click();
+  const n0 = (await calls()).length;
+  await page.locator('.sheet .btn-primary').click();
+  await page.waitForFunction((n) => fetch('/__mock/calls').then((r) => r.json()).then((c) => c.length > n), n0);
+  const c = (await calls()).at(-1);
+  assert.deepEqual([c.service, c.data.due_date], ['update_item', dayStr(1)]);
+  ok('Schnell-Datum: Heute, Morgen, Nächste Woche (Montag), Kein Datum, Speichern');
+
+  // D. Liste teilen (Zwischenablage, kein Android-Menü im Test)
+  await page.locator('#btn-share').click();
+  await page.waitForSelector('.snackbar:not([hidden])');
+  const clip = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(clip, /^Einkaufsliste\n- /);
+  assert.ok(clip.includes('- Milch'));
+  ok('Liste teilen: Titel und offene Einträge als Text');
+
+  // E. Startseite anordnen
+  await page.goto(APP + '#/einstellungen');
+  if (!/einstellungen\/listen/.test(page.url())) { await page.waitForSelector('.menu-row'); await page.locator('.menu-row', { hasText: /^(Listen|Lists)/ }).first().click(); } await page.waitForSelector('.set-row');
+  await page.waitForSelector('.set-row');
+  const rows = page.locator('.home-row');
+  assert.ok((await rows.count()) >= 2);
+  const names = await rows.locator('.diag-name').allInnerTexts();
+  if (!/einstellungen\/listen/.test(page.url())) { await page.waitForSelector('.menu-row'); await page.locator('.menu-row', { hasText: /^(Listen|Lists)/ }).first().click(); } await page.waitForSelector('.set-row');
+  await rows.nth(1).locator('.set-row').click();
+  await page.locator('label.set-switch', { hasText: 'Anheften' }).locator('input').check();
+  await page.locator('#btn-back').click();
+  if (!/einstellungen\/listen/.test(page.url())) { await page.waitForSelector('.menu-row'); await page.locator('.menu-row', { hasText: /^(Listen|Lists)/ }).first().click(); } await page.waitForSelector('.set-row');
+  await page.waitForSelector('.set-row');
+  assert.match(await page.locator('.home-row').first().innerText(), new RegExp(names[1]));
+  assert.match(await page.locator('.home-row').first().locator('.set-hint').innerText(), /Angeheftet/);
+  if (!/einstellungen\/listen/.test(page.url())) { await page.waitForSelector('.menu-row'); await page.locator('.menu-row', { hasText: /^(Listen|Lists)/ }).first().click(); } await page.waitForSelector('.set-row');
+  await page.locator('.home-row').nth(1).locator('.set-row').click();
+  await page.locator('label.set-switch', { hasText: 'Ausblenden' }).locator('input').check();
+  await page.goto(APP);
+  await page.waitForSelector('.list-tile');
+  const tiles = await page.locator('.list-tile:not(.list-tile-new) .list-tile-name').allInnerTexts();
+  assert.equal(tiles[0], names[1]);
+  assert.ok(!tiles.includes(names[0]));
+  ok('Angeheftete Liste steht zuerst, ausgeblendete fehlt als Kachel');
+  assert.deepEqual(errors, []);
+  ok('Keine Seitenfehler');
+  await browser.close();
+})().catch((e) => { console.log('FEHLER:', e); process.exit(1); });
