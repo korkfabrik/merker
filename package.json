@@ -1,16 +1,18 @@
 {
   "name": "merker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
-  "description": "PWA für die To-do-Listen aus Home Assistant",
+  "description": "Phone-first PWA for Home Assistant to-do lists",
   "type": "module",
   "scripts": {
     "setup": "npm install && npx playwright install chromium",
     "test": "bash tests/all.sh",
-    "test:one": "bash tests/run.sh"
+    "test:one": "bash tests/run.sh",
+    "screenshots": "node scripts/screenshots.cjs"
   },
   "devDependencies": {
     "playwright": "1.63.0",
     "ws": "8.21.3"
-  }
+  },
+  "license": "MIT"
 }

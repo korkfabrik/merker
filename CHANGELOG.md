@@ -241,33 +241,9 @@ Sortierung in der Liste öffnet ein Auswahlfenster statt durchzuschalten. Der Ei
 
 Neue Aufgabe: Prio als Knopf mit Ausrufezeichen vor dem Titel, Feld heißt "Fälligkeit". Listenansicht: Der Eintrag "Eintrag hinzufügen" steht unter den offenen Aufgaben, der Plus-Button unten rechts ist auch dort sichtbar. Beide öffnen denselben Dialog mit der aktuellen Liste. Die Eingabeleiste und die Vorschläge beim Tippen entfallen.
 
-## Installation und Update
+## Frühere Versionen (0.7 bis 0.15)
 
-1. Ordner `merker` nach `/config/www/merker/` kopieren (das ist derselbe Ordner wie `/homeassistant/www/merker/`).
-   Gab es `www` vorher nicht, Home Assistant einmal neu starten.
-2. Auf dem Handy in Chrome öffnen: `https://<deine-id>.ui.nabu.casa/local/merker/index.html`, anmelden, "App installieren".
-3. Update: Dateien ersetzen. Hinweis: Home Assistant liefert /local mit langer Cache-Dauer aus. Ab 0.4.1 holt der Service Worker deshalb alle Dateien am Browser-Cache vorbei.
-   Hängt eine Installation trotzdem auf einer alten Version: in Chrome unter Website-Einstellungen die Daten der Adresse löschen (danach neu anmelden).
-   Ab 0.5.2 hat jede Version einen eigenen, komplett geladenen Cache. Startet die App nicht, räumt `js/boot.js` einmal selbst auf, sonst erscheint eine Fehlerseite mit Knopf "Zurücksetzen und neu laden".
-   Alte Anleitung: Die alte Version kommt noch einmal aus dem Cache, ab dem zweiten Öffnen läuft die neue.
-   Sofort: Einstellungen, "App neu laden und Cache leeren".
-
-## Bedienung
-
-- Startseite: ganz oben eine Zusammenfassung (überfällig, heute, offen). Darunter "Fällig (N)", zunächst 4 Einträge mit "Alle N anzeigen". Jede Karte hat links einen Streifen in der Listenfarbe und den Listennamen als kleinen Text, die Beschreibung bleibt auf der Startseite aus. Das Datum ist rechts oben und rot, wenn überfällig, der Titel bleibt normal. Kacheln zeigen "N offen, M überfällig". Früher: oben "Fällig" (überfällig und heute, aus allen Listen, mit Wischen und Antippen wie in der Liste), darunter die Listen als Kacheln. Lupe oben rechts oder am Seitenanfang nach unten ziehen öffnet die Suche.
-- Plus-Knopf unten rechts auf der Startseite: neue Aufgabe mit Liste, Priorität, Datum und Beschreibung. Die zuletzt gewählte Liste ist vorgewählt.
-- Neue Liste: Kachel "+ Neue Liste" auf der Startseite. Legt eine lokale To-do-Liste über den Einrichtungsablauf von Home Assistant an (wie unter Einstellungen, Geräte & Dienste). Braucht einen Administrator-Benutzer. Die Liste öffnet sich danach direkt. Umbenennen und Löschen von Listen geht weiterhin nur in Home Assistant.
-- Listenfarben: Jede Liste hat eine Farbe (Kachel, Chip). Ändern unter Einstellungen, "Farbe je Liste".
-- Einträge: Titel oben, darunter immer in dieser Reihenfolge Datum, Liste, Beschreibung.
-- Suche: Titel, Beschreibung und Listenname (mehrere Wörter möglich, alle müssen passen), auch Erledigtes (unten getrennt).
-- Sortierung je Liste: In der Liste oben rechts über den Einträgen "Sortierung: ..." antippen wechselt zwischen Standard (Prio, Datum, Reihenfolge aus HA), Home Assistant (streng wie in HA) und A bis Z (nach Titel, ❗ zählt nicht). Auch unter Einstellungen wählbar. "Fällig" auf der Startseite und die Suche bleiben immer Standard.
-- Sortieren: In einer Liste mit Verschieben-Funktion erscheint oben rechts ein Sortier-Knopf. Im Modus zeigt die Liste die Reihenfolge aus Home Assistant mit Griffen zum Ziehen. Wischen und Antippen sind dort aus. Nochmal tippen beendet den Modus, danach gilt wieder Prio, Datum, Reihenfolge.
-
-- Unten: Eingabe, bleibt über der Tastatur. Links davon der ❗-Schalter: an, dann bekommt der Eintrag ❗ vor dem Titel. Er ist standardmäßig aus und springt nach dem Hinzufügen wieder zurück.
-- Nach rechts wischen: erledigt, mit "Rückgängig". In "Erledigt" wischen: wieder offen.
-- Nach links wischen: Eintrag in eine andere Liste verschieben (Auswahl der Ziel-Liste, mit "Rückgängig"). Geht nur, wenn die Quell-Liste Löschen erlaubt und es eine andere Liste mit Anlegen-Recht gibt. Titel, Beschreibung und Datum bleiben, der Eintrag steht am Ende der Ziel-Liste und ist offen. Löschen geht im Dialog (Antippen), ebenfalls mit "Rückgängig".
-- Antippen: Dialog mit Titel, Priorität, Beschreibung, Datum, Löschen. Zurück-Geste schließt den Dialog.
-- Nur Felder, die die Liste laut Home Assistant unterstützt, werden angeboten. Ohne Schreibrechte ist alles nur lesbar.
+Vor 0.16 gab es keine Einträge je Version. Die wichtigsten Neuerungen aus dieser Zeit:
 
 ### PC-Ansicht (ab 0.7.1)
 
@@ -317,27 +293,3 @@ Unteraufgaben stehen als Checkliste in der Beschreibung: `- [ ] Text` (offen) un
 - Angeheftete Listen tragen auf ihrer Kachel eine Stecknadel.
 - Einzelne Aufgaben teilen: Im Dialog der Knopf "Teilen" schickt Titel, Fälligkeit und Beschreibung über das Android-Teilen-Menü (am PC in die Zwischenablage).
 - Deaktivieren: In den Einstellungen unter "Startseite" lädt "Deaktivieren" eine Liste gar nicht mehr. Sie hat keine Kachel, taucht weder bei Fällig noch in der Suche noch als Ziel zum Verschieben auf und wird nicht synchronisiert. Dort lässt sie sich wieder einschalten. Ausblenden entfernt dagegen nur die Kachel.
-
-## Diagnose
-
-`https://<deine-id>.ui.nabu.casa/local/merker/diag.html` zeigt Version, Service Worker, Caches und ob die Dateien erreichbar sind. Der Knopf dort setzt die App komplett zurück. Die Seite funktioniert auch, wenn die App selbst schwarz bleibt.
-
-## Tests auf dem Handy
-
-1. Tastatur: Eingabe unten antippen, die Leiste muss direkt über der Tastatur stehen.
-2. Wischen fühlt sich flüssig an und kollidiert nicht mit Scrollen.
-3. In der App ein Datum setzen: erkennt deine Erinnerungs-Automation es wie ein in HA gesetztes?
-4. Zwei Einträge mit gleichem Titel anlegen, einen abhaken: nur dieser verschwindet.
-5. Sortieren: Griff ziehen, auch bis an den Rand (Liste scrollt mit). In Home Assistant die Reihenfolge der Liste prüfen.
-6. Offen aus Stufe 1: Browserleiste beim Login aus der installierten App? Anmeldung nach Wochen noch gültig?
-
-## Aufbau
-
-- `js/rules.js` Prio, Fälligkeit, Sortierung (reine Funktionen)
-- `js/ha-client.js` Anmeldung, Verbindung, Abos, Aktionen (einzige Stelle mit der HA-Bibliothek)
-- `js/repository.js` einziger Weg zu den Daten: Lesen per Abo, Schreiben als Befehl mit sofortiger Anzeige und Rücknahme bei Fehler
-- `js/store.js` Zustand im Speicher, `js/router.js` Ansichten per Adresse
-- `js/composer.js` Eingaben, `js/sheet.js` Bearbeiten-Dialog, `js/swipe.js` Wischgeste, `js/toast.js` Snackbar
-- `js/views/` Ansichten, `js/vendor/haws.js` home-assistant-js-websocket 9.7.1 (MIT-Lizenz), lokal gebündelt
-
-Bei Änderungen an App-Dateien `CACHE_VERSION` in `sw.js` und `APP_VERSION` in `js/version.js` gemeinsam erhöhen.

@@ -34,6 +34,13 @@ const lists = {
   },
 };
 
+// Andere Startdaten, zum Beispiel für Screenshots: MOCK_LISTS=pfad/zu/daten.mjs (Standard-Export: (day) => lists)
+if (process.env.MOCK_LISTS) {
+  const custom = (await import(path.resolve(process.env.MOCK_LISTS))).default(day);
+  for (const key of Object.keys(lists)) delete lists[key];
+  Object.assign(lists, custom);
+}
+
 const open = (l) => String(l.items.filter((i) => i.status === 'needs_action').length);
 const entityState = (id) => ({
   s: lists[id].unavailable ? 'unavailable' : open(lists[id]),

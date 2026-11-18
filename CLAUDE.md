@@ -16,6 +16,8 @@ Merker ist eine PWA für die To-do-Listen aus Home Assistant (HA). Sie liegt auf
 - `app/js/vendor/haws.js`: home-assistant-js-websocket (nicht anfassen).
 - `tests/`: `mock-ha.mjs` (nachgebauter HA-Server auf Port 8123 mit WebSocket, Auth, To-do, Config-Flow, frontend/user_data und Test-Hilfen unter `/__mock/...`), Browser-Tests `e2e*.cjs` (Playwright), Tests ohne Browser `*.test.mjs`.
 - `scripts/version.sh 1.2.3` setzt die Version, `scripts/zip.sh` baut ein Zip nur mit der App.
+- `npm run screenshots` erzeugt die Bilder für die READMEs (`docs/screenshots/de` und `en`) mit den Beispieldaten aus `scripts/demo-data.mjs`. Nach sichtbaren Änderungen an der App neu erzeugen.
+- `README.md` (Englisch) und `README.de.md` (Deutsch) beschreiben die App für andere Nutzer. Neue Funktionen in beiden ergänzen.
 - `ha/`: Skript und Anleitung, mit denen HA die neueste Version von `main` holt.
 
 ## Bei jeder Änderung an der App
