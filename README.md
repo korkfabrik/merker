@@ -36,8 +36,6 @@ Merker only offers what the integration behind a list supports. A read-only list
 - A Home Assistant user to log in. Creating new lists needs an administrator.
 - HTTPS access to Home Assistant (for example Home Assistant Cloud or your own certificate) to install Merker as an app on your phone. In a desktop browser it also runs without.
 
-Built and tested for Android with Chrome and for desktop browsers. iOS is not tested.
-
 ## Installation
 
 ### Manual
@@ -94,7 +92,7 @@ npm run screenshots           # screenshots for this README
 - `scripts/`: set the version, build a zip, screenshots
 - `ha/`: update script for Home Assistant
 - `CHANGELOG.md`: all versions (German)
-- `CLAUDE.md`: rules and decisions for working on Merker with Claude Code. Merker is developed with AI assistance and covered by 35 browser tests with more than 200 checks against a mock Home Assistant server.
+- `CLAUDE.md`: rules and decisions for working on Merker with Claude Code. Merker is developed with AI assistance, has gone through more than 60 versions in daily use and is covered by 35 browser tests with more than 200 checks against a mock Home Assistant server.
 
 ## License
 

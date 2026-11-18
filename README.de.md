@@ -36,8 +36,6 @@ Merker bietet nur an, was die Integration hinter einer Liste kann. Eine Liste nu
 - Ein Home-Assistant-Benutzer zum Anmelden. Neue Listen anlegen geht nur als Administrator.
 - Zugriff auf Home Assistant über HTTPS (zum Beispiel Home Assistant Cloud oder eigenes Zertifikat), damit sich Merker auf dem Handy als App installieren lässt. Im Browser am PC läuft es auch ohne.
 
-Gebaut und getestet für Android mit Chrome und für Browser am PC. iOS ist nicht getestet.
-
 ## Installation
 
 ### Von Hand
@@ -72,7 +70,7 @@ Für ein Update die Dateien ersetzen. Merker zeigt dann "Version … verfügbar"
 
 ## Entwicklung
 
-Reine ES-Module, kein Framework, kein Build-Schritt. Alles in `app/` wird unverändert kopiert. Befehle und Aufbau stehen im [englischen README](README.md#development). Merker entsteht mit Hilfe von KI (Claude Code, Regeln in `CLAUDE.md`) und ist mit 35 Browser-Tests und über 200 Prüfschritten gegen einen nachgebauten Home-Assistant-Server abgesichert.
+Reine ES-Module, kein Framework, kein Build-Schritt. Alles in `app/` wird unverändert kopiert. Befehle und Aufbau stehen im [englischen README](README.md#development). Merker entsteht mit Hilfe von KI (Claude Code, Regeln in `CLAUDE.md`), ist im täglichen Einsatz durch mehr als 60 Versionen gegangen und ist mit 35 Browser-Tests und über 200 Prüfschritten gegen einen nachgebauten Home-Assistant-Server abgesichert.
 
 ## Lizenz
 
