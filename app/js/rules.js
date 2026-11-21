@@ -49,6 +49,17 @@ export function dueValue(due) {
   return parsed.time ? `${parsed.date}T${parsed.time}:00` : parsed.date;
 }
 
+// Was beim Verschieben in eine Liste mit diesen Fähigkeiten verloren ginge: 'date', 'time', 'description'.
+// Leer heißt: alles kommt an.
+export function moveLosses(item, features) {
+  const losses = [];
+  const parsed = parseDue(item.due);
+  if (parsed && !parsed.time && !features.dueDate) losses.push('date');
+  if (parsed?.time && !features.dueDatetime) losses.push(features.dueDate ? 'time' : 'date');
+  if ((item.description ?? '').trim() && !features.description) losses.push('description');
+  return losses;
+}
+
 // Neues Datum, Uhrzeit der bisherigen Fälligkeit bleibt
 export function withTimeOf(date, originalDue) {
   const time = parseDue(originalDue)?.time;

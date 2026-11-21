@@ -109,9 +109,11 @@ export function enqueue(queue, op) {
         data.due_datetime = dueTime;
       }
       const merged = queue.map((entry) => (entry === add ? { ...add, data } : entry));
-      // Erledigt/offen kann Home Assistant beim Anlegen nicht setzen: bleibt ein eigener Auftrag
+      // Erledigt/offen kann Home Assistant beim Anlegen nicht setzen: bleibt ein eigener Auftrag.
+      // Ein früherer Status-Auftrag fällt nur weg, wenn die neue Änderung selbst einen Status bringt.
+      if (status === undefined) return merged;
       const withoutStatus = merged.filter((entry) => !(entry.service === 'update_item' && entry.data.item === target && 'status' in entry.data));
-      return status !== undefined ? [...withoutStatus, { ...op, data: { item: target, status } }] : withoutStatus;
+      return [...withoutStatus, { ...op, data: { item: target, status } }];
     }
   }
   return [...queue, op];

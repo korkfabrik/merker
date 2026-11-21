@@ -90,6 +90,7 @@ export class Repository {
   #serverAt = {}; // entityId -> Zeitpunkt des letzten Stands aus Home Assistant
   #onlineSince = 0;
   #todosFresh = false; // Listen-Stand stammt aus der laufenden Verbindung
+  #statusHooked = false; // start() kann nach Fehlversuchen erneut laufen, der Listener soll nur einmal hängen
 
   constructor(ha, store) {
     this.ha = ha;
@@ -99,15 +100,18 @@ export class Repository {
   }
 
   async start() {
-    this.ha.onStatus((status) => {
-      this.store.set({ status });
-      if (status === 'online') {
-        this.#onlineSince = Date.now();
-        this.#todosFresh = false;
-        setTimeout(() => this.#flush(), 300);
-        this.#syncUserMaps();
-      }
-    });
+    if (!this.#statusHooked) {
+      this.#statusHooked = true;
+      this.ha.onStatus((status) => {
+        this.store.set({ status });
+        if (status === 'online') {
+          this.#onlineSince = Date.now();
+          this.#todosFresh = false;
+          setTimeout(() => this.#flush(), 300);
+          this.#syncUserMaps();
+        }
+      });
+    }
     await this.ha.connect();
     this.ha.subscribeTodoEntities((todos) => {
       this.#todosFresh = true;
@@ -277,12 +281,19 @@ export class Repository {
     return null;
   }
 
-  // Ohne Verbindung: Änderung einreihen und sofort anzeigen
+  // Ohne Verbindung: Änderung einreihen und sofort anzeigen. Mit Verbindung gleich danach senden.
   #queueOp(entityId, service, data, extra = {}) {
     this.#queue = enqueue(this.#queue, { id: `${Date.now()}-${++this.#tempCounter}`, entityId, service, data, ...extra });
     this.#saveQueue();
     const base = this.#server[entityId] ?? this.#items(entityId);
     this.store.setItems(entityId, overlay(entityId, base, this.#queue));
+    if (!this.offline) setTimeout(() => this.#flush(), 0);
+  }
+
+  // Einreihen statt direkt senden: ohne Verbindung, solange für die Liste noch Aufträge warten (sonst überholt die neue
+  // Änderung ältere), oder wenn sie eine neue Aufgabe betrifft, die noch keine echte ID hat.
+  #mustQueue(entityId, ...uids) {
+    return this.offline || this.#queue.some((op) => op.entityId === entityId) || uids.flat().some(isLocalUid);
   }
 
   get offline() {
@@ -345,11 +356,15 @@ export class Repository {
 
   #subscribeItems(entityId) {
     // Platzhalter, damit die Liste nicht doppelt abonniert wird, solange die Antwort aussteht.
-    this.#itemSubscriptions.set(entityId, () => {});
+    const placeholder = () => {};
+    this.#itemSubscriptions.set(entityId, placeholder);
     this.ha
       .subscribeItems(entityId, (items) => this.#showServer(entityId, items))
       .then((unsubscribe) => {
-        if (this.#itemSubscriptions.has(entityId)) this.#itemSubscriptions.set(entityId, unsubscribe);
+        // Abo fehlgeschlagen (zum Beispiel Liste noch nicht verfügbar): vergessen, damit #syncLists es später erneut versucht
+        if (!unsubscribe) {
+          if (this.#itemSubscriptions.get(entityId) === placeholder) this.#itemSubscriptions.delete(entityId);
+        } else if (this.#itemSubscriptions.get(entityId) === placeholder) this.#itemSubscriptions.set(entityId, unsubscribe);
         else unsubscribe();
       });
   }
@@ -369,7 +384,8 @@ export class Repository {
 
   // Zeigt die Änderung sofort, sendet sie an HA und nimmt sie bei einem Fehler zurück.
   async #run(entityId, apply, service, data) {
-    if (this.offline) {
+    // Bei add_item steht in data.item der Titel, keine ID
+    if (this.#mustQueue(entityId, service === 'add_item' ? [] : (data.item ?? []))) {
       this.#queueOp(entityId, service, data);
       return;
     }
@@ -388,7 +404,7 @@ export class Repository {
     const data = { item: fields.summary };
     if (fields.description) data.description = fields.description;
     if (fields.due) putDue(data, fields.due, this.store.get().lists.find((entry) => entry.id === entityId));
-    if (this.offline) {
+    if (this.#mustQueue(entityId)) {
       const localUid = `${LOCAL_PREFIX}${Date.now()}-${++this.#tempCounter}`;
       this.#queueOp(entityId, 'add_item', data, { localUid });
       return localUid;
@@ -442,7 +458,7 @@ export class Repository {
       const at = previousUid ? rest.findIndex((item) => item.uid === previousUid) + 1 : 0;
       return [...rest.slice(0, at), moving, ...rest.slice(at)];
     };
-    if (this.offline) {
+    if (this.#mustQueue(entityId, uid, previousUid ?? [])) {
       this.#queueOp(entityId, 'move', { uid, previous_uid: previousUid });
       return;
     }

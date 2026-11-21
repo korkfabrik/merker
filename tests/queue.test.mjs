@@ -17,6 +17,16 @@ assert.equal(queue.length, 3);
 // Löschen der neuen Aufgabe streicht alles zu ihr
 queue = q.enqueue(queue, { id: 5, entityId: 'L', service: 'remove_item', data: { item: 'local-1' } });
 assert.deepEqual(queue.map((op) => op.id), [1]);
+// Offline angelegt, erledigt, danach umbenannt: der Erledigt-Auftrag bleibt
+let done = [];
+done = q.enqueue(done, { id: 1, entityId: 'L', service: 'add_item', data: { item: 'Eier' }, localUid: 'local-3' });
+done = q.enqueue(done, { id: 2, entityId: 'L', service: 'update_item', data: { item: 'local-3', status: 'completed', description: '✓ 20.11.2026' } });
+done = q.enqueue(done, { id: 3, entityId: 'L', service: 'update_item', data: { item: 'local-3', rename: 'Eier (10)' } });
+assert.deepEqual(done.map((op) => [op.service, op.data]), [['add_item', { item: 'Eier (10)', description: '✓ 20.11.2026' }], ['update_item', { item: 'local-3', status: 'completed' }]]);
+assert.equal(q.overlay('L', [], done)[0].status, 'completed');
+// Wieder öffnen ersetzt den alten Status-Auftrag
+done = q.enqueue(done, { id: 4, entityId: 'L', service: 'update_item', data: { item: 'local-3', status: 'needs_action' } });
+assert.deepEqual(done.filter((op) => 'status' in op.data).map((op) => op.data.status), ['needs_action']);
 // remap
 let r = [{ entityId: 'L', service: 'update_item', data: { item: 'local-9', status: 'completed' } }, { entityId: 'L', service: 'move', data: { uid: 'x', previous_uid: 'local-9' } }];
 r = q.remap(r, 'local-9', 'real');

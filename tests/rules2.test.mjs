@@ -22,4 +22,13 @@ assert.equal(r.nextDue('2026-01-31', 'monthly', new Date(2026, 0, 31)), '2026-02
 assert.equal(r.nextDue(null, 'monthly', today), '2026-12-08');
 assert.equal(r.nextDue('2024-02-29', 'yearly', new Date(2024, 1, 29)), '2025-02-28');
 assert.equal(r.resetForRepeat('- [x] A\n- [ ] B\n🔁 wöchentlich\n✓ 08.11.2026'), '- [ ] A\n- [ ] B\n🔁 wöchentlich');
+// Verschieben: was die Ziel-Liste nicht speichern kann
+const all = { dueDate: true, dueDatetime: true, description: true };
+const none = { dueDate: false, dueDatetime: false, description: false };
+assert.deepEqual(r.moveLosses({ due: null, description: null }, none), []);
+assert.deepEqual(r.moveLosses({ due: '2026-11-20', description: 'x' }, all), []);
+assert.deepEqual(r.moveLosses({ due: '2026-11-20', description: '  ' }, none), ['date']);
+assert.deepEqual(r.moveLosses({ due: '2026-11-20T09:30:00', description: null }, { ...all, dueDatetime: false }), ['time']);
+assert.deepEqual(r.moveLosses({ due: '2026-11-20T09:30:00', description: 'x' }, none), ['date', 'description']);
+assert.deepEqual(r.moveLosses({ due: null, description: '- [ ] A' }, { ...all, description: false }), ['description']);
 console.log('rules2 (Wiederholen, Erledigt-Datum, Unteraufgaben ordnen): alle Tests bestanden');

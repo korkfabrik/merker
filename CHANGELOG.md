@@ -2,6 +2,17 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.0.2
+
+Fixes aus dem Code-Review:
+- Verschieben in eine Liste, die Datum, Uhrzeit oder Beschreibung nicht speichern kann, ist gesperrt. Statt die Angaben still zu verlieren, erscheint eine Warnung und die Aufgabe bleibt, wo sie ist.
+- Ohne Netz angelegt, erledigt und danach geändert: Die Aufgabe bleibt erledigt.
+- Direkt nach dem Wiederverbinden reihen sich neue Änderungen hinter die wartenden ein. Aktionen an ohne Netz angelegten Aufgaben schlagen nicht mehr fehl, und eine ältere Änderung überschreibt keine neuere.
+- War eine Liste beim Start kurz nicht verfügbar, lädt sie, sobald sie wieder da ist, statt bei "Einträge laden" hängen zu bleiben.
+- Aus der Wochenansicht geöffnete Aufgaben: Unter dem Dialog bleibt die Woche.
+- Nach Schließen des Update-Hinweises erscheint er beim nächsten Update wieder.
+- Weniger doppelte Abgleiche nach einem langen Start ohne Netz. Knöpfe auf Fehler- und Diagnoseseite ohne Pillenform.
+
 ## Version 1.0.1
 
 Schickt Home Assistant nach einer eigenen Änderung genau den Stand zurück, der schon angezeigt wird, zeichnet die App die Liste nicht mehr neu. Vorher wurde dabei eine Zeile ersetzt, die man gerade wischt. Wer zwei Aufgaben schnell hintereinander erledigte, verlor so manchmal das zweite Wischen.

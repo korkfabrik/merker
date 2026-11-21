@@ -50,7 +50,11 @@ export function watchForUpdates(registration) {
       },
       t('update.reload'),
     );
-    const close = h('button', { class: 'update-close press', type: 'button', 'aria-label': t('update.later'), onclick: () => bar.remove() }, '×');
+    const dismiss = () => {
+      bar.remove();
+      bar = null; // ein späteres Update darf wieder einen Hinweis zeigen
+    };
+    const close = h('button', { class: 'update-close press', type: 'button', 'aria-label': t('update.later'), onclick: dismiss }, '×');
     bar = h('div', { class: 'update-bar', role: 'status' }, h('span', { class: 'update-text' }, version ? t('update.availableVersion', { version }) : t('update.available')), reload, close);
     document.body.append(bar);
   }

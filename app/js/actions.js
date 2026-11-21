@@ -1,6 +1,6 @@
 // Gemeinsame Aktionen mit Meldung und "Rückgängig". Genutzt von der Wischgeste und vom Bearbeiten-Dialog.
 // Die zurückgegebenen Versprechen schlagen bei einem Fehler fehl, die Fehlermeldung wird hier schon gezeigt.
-import { parseDue, dueValue, withTimeOf, getRecurrence, nextDue, resetForRepeat, formatDue, formatDay, stripPrio } from './rules.js';
+import { parseDue, dueValue, withTimeOf, getRecurrence, nextDue, resetForRepeat, formatDue, formatDay, stripPrio, moveLosses } from './rules.js';
 import { pickList, pickChoice } from './picker.js';
 import { quickDay } from './quickdates.js';
 import { errorText } from './repository.js';
@@ -112,6 +112,12 @@ export async function moveWithUndo({ repo, toast, store }, list, item) {
   const targets = moveTargets(store.get(), list);
   const target = await pickList(targets, t('picker.moveTitle'));
   if (!target) throw new Error('abgebrochen');
+  // Kann die Ziel-Liste Datum, Uhrzeit oder Beschreibung nicht speichern, gingen sie verloren: dann gar nicht verschieben.
+  const blocked = moveBlockedText(moveLosses(item, target.features), target.name);
+  if (blocked) {
+    toast.show(blocked, { error: true });
+    throw new Error('nicht verschiebbar');
+  }
   const snapshot = { summary: item.summary, description: item.description ?? null, due: dueValue(item.due) };
   const place = { previousUid: repo.previousUid(list.id, item.uid), completed: item.status === 'completed' };
   try {
@@ -140,6 +146,16 @@ export async function moveWithUndo({ repo, toast, store }, list, item) {
       }
     },
   });
+}
+
+function moveBlockedText(losses, list) {
+  const has = (key) => losses.includes(key);
+  if (has('description') && has('date')) return t('toast.moveNoDateDescription', { list });
+  if (has('description') && has('time')) return t('toast.moveNoTimeDescription', { list });
+  if (has('description')) return t('toast.moveNoDescription', { list });
+  if (has('date')) return t('toast.moveNoDate', { list });
+  if (has('time')) return t('toast.moveNoTime', { list });
+  return null;
 }
 
 function errorTextOf(err) {

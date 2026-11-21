@@ -124,8 +124,8 @@ function renderNow() {
   const route = router.current;
   const state = store.get();
   // Der Bearbeiten-Dialog liegt über der Liste, darunter bleibt die Liste sichtbar.
-  // Kam man von der Startseite oder der Suche, bleibt diese darunter sichtbar.
-  const keepBase = route.name === 'item' && (lastBase?.name === 'lists' || lastBase?.name === 'search');
+  // Kam man von der Startseite, der Suche oder der Woche, bleibt diese darunter sichtbar.
+  const keepBase = route.name === 'item' && ['lists', 'search', 'week'].includes(lastBase?.name);
   const view = route.name !== 'item' ? route : keepBase ? lastBase : { ...route, name: 'list', path: listPath(route.id) };
   lastBase = view;
 

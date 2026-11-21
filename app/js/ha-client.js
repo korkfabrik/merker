@@ -124,6 +124,7 @@ export class HAClient {
   }
 
   // Live-Abo auf die Einträge einer Liste. Liefert eine Funktion zum Beenden des Abos.
+  // Liefert die Abmeldefunktion oder null, wenn das Abo nicht zustande kam.
   async subscribeItems(entityId, callback) {
     try {
       return await this.conn.subscribeMessage((event) => callback(event.items ?? []), {
@@ -132,7 +133,7 @@ export class HAClient {
       });
     } catch (err) {
       console.warn('Abo auf', entityId, 'nicht möglich', err);
-      return () => {};
+      return null;
     }
   }
 

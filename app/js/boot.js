@@ -102,7 +102,7 @@
     p.textContent = T.failed + text + (window.__merkerVersion ? T.version + window.__merkerVersion + ')' : '');
     var b = document.createElement('button');
     b.textContent = T.reset;
-    b.style.cssText = 'padding:14px 20px;border:0;border-radius:999px;background:#b2c5ff;color:#022b78;font:inherit;font-weight:600';
+    b.style.cssText = 'padding:14px 20px;border:0;border-radius:10px;background:#b2c5ff;color:#022b78;font:inherit;font-weight:600';
     b.onclick = function () { flag(null); reset(); };
     box.appendChild(p);
     box.appendChild(b);

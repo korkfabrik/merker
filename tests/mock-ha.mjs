@@ -148,6 +148,13 @@ const server = http.createServer((req, res) => {
     res.writeHead(200).end('ok');
     return;
   }
+  if (url.pathname === '/__mock/add-list-plain' && req.method === 'POST') {
+    // Liste ohne Datum und ohne Beschreibung (nur Anlegen, Löschen, Ändern), wie die Einkaufsliste von HA
+    lists['todo.einfach'] = { name: 'Einfach', features: 7, items: [] };
+    for (const s of sockets) if (s.entitiesSubId) send(s.ws, { id: s.entitiesSubId, type: 'event', event: { a: { 'todo.einfach': entityState('todo.einfach') } } });
+    res.writeHead(200).end('ok');
+    return;
+  }
   if (url.pathname === '/__mock/add-list' && req.method === 'POST') {
     lists['todo.neu'] = { name: 'Neue Liste', features: 127, items: [] };
     for (const s of sockets) if (s.entitiesSubId) send(s.ws, { id: s.entitiesSubId, type: 'event', event: { a: { 'todo.neu': entityState('todo.neu') } } });
