@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { findLinks } from '../app/js/links.js';
-import { quickDay } from '../app/js/quickdates.js';
+import { quickDay, quickIn } from '../app/js/quickdates.js';
 import { orderLists } from '../app/js/settings.js';
 import { listAsText } from '../app/js/share.js';
 
@@ -18,6 +18,13 @@ assert.equal(quickDay('woche', new Date(2026, 9, 28)), '2026-11-02'); // Mittwoc
 assert.equal(quickDay('woche', new Date(2026, 9, 26)), '2026-11-02'); // Montag -> nächster Montag
 assert.equal(quickDay('woche', new Date(2026, 9, 25)), '2026-10-26'); // Sonntag -> Montag
 assert.equal(quickDay('none'), '');
+assert.equal(quickIn(1, 'w', new Date(2026, 10, 22)), '2026-11-29');
+assert.equal(quickIn(3, 'w', new Date(2026, 11, 20)), '2027-01-10'); // über den Jahreswechsel
+assert.equal(quickIn(1, 'm', new Date(2026, 0, 31)), '2026-02-28'); // 31. Januar plus 1 Monat: letzter Februartag
+assert.equal(quickIn(1, 'm', new Date(2028, 0, 31)), '2028-02-29'); // Schaltjahr
+assert.equal(quickIn(3, 'm', new Date(2026, 10, 22)), '2027-02-22');
+assert.equal(quickIn(1, 'y', new Date(2028, 1, 29)), '2029-02-28'); // 29. Februar plus 1 Jahr
+assert.equal(quickIn(2, 'y', new Date(2026, 10, 22)), '2028-11-22');
 
 const lists = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
 assert.deepEqual(orderLists(lists, { order: [], pinned: [], hidden: [] }).map((l) => l.id), ['a', 'b', 'c', 'd']);

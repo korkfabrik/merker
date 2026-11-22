@@ -70,7 +70,7 @@ Für ein Update die Dateien ersetzen. Merker zeigt dann "Version … verfügbar"
 
 ## Entwicklung
 
-Reine ES-Module, kein Framework, kein Build-Schritt. Alles in `app/` wird unverändert kopiert. Befehle und Aufbau stehen im [englischen README](README.md#development). Merker entsteht mit Hilfe von KI (Claude Code, Regeln in `CLAUDE.md`). Bisher gab es mehr als 60 Versionen, ich nutze die App täglich, und sie ist mit 36 Browser-Tests und über 200 Prüfschritten gegen einen nachgebauten Home-Assistant-Server abgesichert.
+Reine ES-Module, kein Framework, kein Build-Schritt. Alles in `app/` wird unverändert kopiert. Befehle und Aufbau stehen im [englischen README](README.md#development). Merker entsteht mit Hilfe von KI (Claude Code, Regeln in `CLAUDE.md`). Bisher gab es mehr als 60 Versionen, ich nutze die App täglich, und sie ist mit 38 Browser-Tests und über 200 Prüfschritten gegen einen nachgebauten Home-Assistant-Server abgesichert.
 
 ## Lizenz
 

@@ -1553,7 +1553,7 @@ body:has(#fab:not([hidden])) #content {
   color: var(--on-surface);
   font: inherit;
   cursor: pointer;
-  flex: 1 1 auto;
+  flex: none; /* eine Zeile zum Wischen, die Knöpfe behalten ihre Breite */
   padding: 0 8px;
   font-size: 13.5px;
   white-space: nowrap;

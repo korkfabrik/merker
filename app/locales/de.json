@@ -149,12 +149,23 @@
   "picker.moveTitle": "In welche Liste verschieben?",
   "picker.title": "In welche Liste?",
   "quick.label": "Schnellwahl Datum",
+  "quick.months": {
+    "one": "{n} Monat",
+    "other": "{n} Monate"
+  },
   "quick.nextWeek": "Nächste Woche",
-  "quick.nextWeekHint": "Montag der nächsten Woche",
   "quick.none": "Keine",
   "quick.noneHint": "Kein Datum",
   "quick.today": "Heute",
   "quick.tomorrow": "Morgen",
+  "quick.weeks": {
+    "one": "{n} Woche",
+    "other": "{n} Wochen"
+  },
+  "quick.years": {
+    "one": "{n} Jahr",
+    "other": "{n} Jahre"
+  },
   "recur.biweekly": "alle 2 Wochen",
   "recur.daily": "täglich",
   "recur.label": "Wiederholen",

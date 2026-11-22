@@ -284,8 +284,12 @@ export class ItemSheet {
     const save = h('button', { class: 'btn btn-primary btn-compact press', type: 'submit' }, t('sheet.save'));
     // Wiederholen nur mit Datum und Beschreibung (die Wiederholung steht in der Beschreibung)
     const recurrence = description && due ? recurrenceButton(storedRecurrence) : null;
-    // Speichern oben rechts. Unten links Löschen, rechts Wieder öffnen (nur erledigt), Verschieben, Duplizieren, Teilen.
+    // Speichern oben rechts. Unten links Löschen, rechts Erledigt (nur offen) oder Wieder öffnen (nur erledigt), Verschieben, Duplizieren, Teilen.
     const right = [];
+    if (!isCompleted(item) && features.update) {
+      const fields = () => ({ title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null });
+      right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('item.markDone'), title: t('item.markDone'), onclick: () => this.#complete(list, item, fields()) }, icon('check', 22)));
+    }
     if (isCompleted(item)) {
       right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('item.reopen'), title: t('item.reopen'), onclick: () => this.#reopen(list, item) }, icon('reopen', 22)));
     }
@@ -350,8 +354,27 @@ export class ItemSheet {
   }
 
   #save(list, item, fields) {
+    const changes = this.#changes(item, fields);
+    if (!changes) return;
+    this.#leave();
+    if (Object.keys(changes).length === 0) return;
+    this.repo.updateItem(list.id, item.uid, changes).catch((err) => this.#fail(err));
+  }
+
+  // Erledigen aus dem Dialog: erst die Änderungen im Dialog speichern, dann abhaken (Wiederholung rechnet mit dem neuen Stand).
+  #complete(list, item, fields) {
+    const changes = this.#changes(item, fields) ?? {};
+    this.#leave();
+    (async () => {
+      if (Object.keys(changes).length) await this.repo.updateItem(list.id, item.uid, changes);
+      await completeWithUndo(this, list, { ...item, ...changes }, true);
+    })().catch((err) => this.#fail(err));
+  }
+
+  // Was sich im Dialog geändert hat. null, wenn der Titel leer ist.
+  #changes(item, fields) {
     const text = fields.title.value.trim();
-    if (!text) return;
+    if (!text) return null;
     const summary = fields.prio.getAttribute('aria-pressed') === 'true' ? withPrio(text) : stripPrio(text) || text;
     const changes = {};
     if (summary !== item.summary) changes.summary = summary;
@@ -364,9 +387,7 @@ export class ItemSheet {
       const next = fields.due.value || '';
       if (next !== fields.originalDue) changes.due = withTimeOf(next, item.due) || null; // Uhrzeit der bisherigen Fälligkeit bleibt
     }
-    this.#leave();
-    if (Object.keys(changes).length === 0) return;
-    this.repo.updateItem(list.id, item.uid, changes).catch((err) => this.#fail(err));
+    return changes;
   }
 
   // Kopie anlegen (bei mehreren Listen mit Auswahl), danach schließt der Dialog.

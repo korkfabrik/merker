@@ -149,12 +149,23 @@
   "picker.moveTitle": "Move to which list?",
   "picker.title": "Which list?",
   "quick.label": "Quick date",
+  "quick.months": {
+    "one": "{n} month",
+    "other": "{n} months"
+  },
   "quick.nextWeek": "Next week",
-  "quick.nextWeekHint": "Monday next week",
   "quick.none": "None",
   "quick.noneHint": "No date",
   "quick.today": "Today",
   "quick.tomorrow": "Tomorrow",
+  "quick.weeks": {
+    "one": "{n} week",
+    "other": "{n} weeks"
+  },
+  "quick.years": {
+    "one": "{n} year",
+    "other": "{n} years"
+  },
   "recur.biweekly": "every 2 weeks",
   "recur.daily": "daily",
   "recur.label": "Repeat",

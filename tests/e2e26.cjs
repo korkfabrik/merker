@@ -38,7 +38,7 @@ const ok = (n) => console.log('OK  ', n);
   await page.locator('li.swipe', { hasText: 'Milch' }).click();
   await page.waitForSelector('.sheet-head-edit');
   assert.equal(await page.locator('.sheet-head-edit button[type=submit]').innerText(), 'Save');
-  assert.deepEqual(await page.locator('.sheet .quick-chip').allInnerTexts(), ['Today', 'Tomorrow', 'Next week', 'None']);
+  assert.deepEqual(await page.locator('.sheet .quick-chip').allInnerTexts(), ['None', 'Today', 'Tomorrow', '1 week', '2 weeks', '3 weeks', '1 month', '2 months', '3 months', '1 year', '2 years', '3 years']);
   await page.keyboard.press('Escape');
   await page.waitForSelector('.sheet-root', { state: 'detached' });
   ok('Bearbeiten-Dialog auf Englisch');

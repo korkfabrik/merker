@@ -48,10 +48,14 @@ const dayStr = (offset) => { const d = new Date(); d.setDate(d.getDate() + offse
   assert.equal(await page.locator('.sheet input[name=due]').inputValue(), dayStr(1));
   await page.locator('.quick-chip', { hasText: 'Heute' }).click();
   assert.equal(await page.locator('.sheet input[name=due]').inputValue(), dayStr(0));
-  await page.locator('.quick-chip', { hasText: 'Nächste Woche' }).click();
-  const nm = await page.locator('.sheet input[name=due]').inputValue();
-  assert.equal(new Date(nm + 'T12:00:00').getDay(), 1);
-  assert.ok(nm > dayStr(0));
+  assert.deepEqual(await page.locator('.sheet .quick-chip').allInnerTexts(), ['Keine', 'Heute', 'Morgen', '1 Woche', '2 Wochen', '3 Wochen', '1 Monat', '2 Monate', '3 Monate', '1 Jahr', '2 Jahre', '3 Jahre']);
+  await page.locator('.quick-chip', { hasText: '2 Wochen' }).click();
+  assert.equal(await page.locator('.sheet input[name=due]').inputValue(), dayStr(14));
+  // Die Zeile lässt sich wischen: der letzte Knopf ist erreichbar
+  await page.locator('.quick-chip', { hasText: '1 Jahr' }).click();
+  const year = await page.locator('.sheet input[name=due]').inputValue();
+  assert.equal(year.slice(5), dayStr(0).slice(5) === '02-29' ? '02-28' : dayStr(0).slice(5));
+  assert.equal(Number(year.slice(0, 4)), Number(dayStr(0).slice(0, 4)) + 1);
   await page.locator('.quick-chip', { hasText: 'Keine' }).click();
   assert.equal(await page.locator('.sheet input[name=due]').inputValue(), '');
   await page.locator('.quick-chip', { hasText: 'Morgen' }).click();
@@ -60,7 +64,7 @@ const dayStr = (offset) => { const d = new Date(); d.setDate(d.getDate() + offse
   await page.waitForFunction((n) => fetch('/__mock/calls').then((r) => r.json()).then((c) => c.length > n), n0);
   const c = (await calls()).at(-1);
   assert.deepEqual([c.service, c.data.due_date], ['update_item', dayStr(1)]);
-  ok('Schnell-Datum: Heute, Morgen, Nächste Woche (Montag), Kein Datum, Speichern');
+  ok('Schnell-Datum in einer Zeile: Keine, Heute, Morgen, 1 bis 3 Wochen, Monate und Jahre, Speichern');
 
   // D. Liste teilen (Zwischenablage, kein Android-Menü im Test)
   await page.locator('#btn-share').click();
