@@ -39,7 +39,7 @@ const ok = (n) => console.log('OK  ', n);
   assert.equal(await page.locator('.check-row').count(), 4);
   ok('Unteraufgabe hinzufügen mit Enter, Dialog bleibt offen');
 
-  await page.locator('.sheet .btn-primary').click();
+  await page.locator('.sheet button[type=submit]').click();
   await page.waitForFunction(() => !document.querySelector('.sheet'));
   assert.equal((await row.locator('.sub-progress').innerText()).trim(), '2/4');
   ok('Nach dem Schließen zeigt die Karte 2/4');

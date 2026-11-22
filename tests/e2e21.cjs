@@ -52,7 +52,7 @@ const ORIGINAL = 'Kartons holen\n- [ ] Küche\n- [x] Bad\n- [ ] Keller\n- [ ] Ga
   await page.waitForTimeout(600);
   await swipeLeft(page.locator('.sub-swipe', { hasText: 'Küche' }), 0.7);
   for (let i = 0; i < 40 && (await desc('Umzug2')) === ORIGINAL; i++) await page.waitForTimeout(100);
-  await page.locator('.sheet .btn-primary').evaluate((b) => b.click());
+  await page.locator('.sheet button[type=submit]').evaluate((b) => b.click());
   await page.waitForFunction(() => !document.querySelector('.sheet'));
   await page.locator('.snackbar-action').click();
   for (let i = 0; i < 40 && (await desc('Umzug2')) !== ORIGINAL; i++) await page.waitForTimeout(100);

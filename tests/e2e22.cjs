@@ -60,7 +60,7 @@ const dayStr = (offset) => { const d = new Date(); d.setDate(d.getDate() + offse
   assert.equal(await page.locator('.sheet input[name=due]').inputValue(), '');
   await page.locator('.quick-chip', { hasText: 'Morgen' }).click();
   const n0 = (await calls()).length;
-  await page.locator('.sheet .btn-primary').click();
+  await page.locator('.sheet button[type=submit]').click();
   await page.waitForFunction((n) => fetch('/__mock/calls').then((r) => r.json()).then((c) => c.length > n), n0);
   const c = (await calls()).at(-1);
   assert.deepEqual([c.service, c.data.due_date], ['update_item', dayStr(1)]);
