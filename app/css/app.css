@@ -1971,6 +1971,19 @@ body:has(#fab:not([hidden])) #content {
   min-height: 44px;
   padding: 0 20px;
 }
+
+.sheet-head-buttons {
+  flex: none;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-done {
+  width: 48px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
 .filter-seg {
   flex: 0 1 auto;
   min-width: 0;

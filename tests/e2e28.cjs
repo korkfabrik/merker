@@ -152,7 +152,7 @@ const deDate = (d = new Date()) => d.toLocaleDateString('de-DE', { day: '2-digit
   await page.waitForTimeout(300);
   await page.locator('li.swipe', { hasText: 'Milch' }).click();
   await page.waitForSelector('.sheet button[aria-label=Duplizieren]');
-  assert.deepEqual(await page.locator('.sheet-actions-right button').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label'))), ['Erledigt', 'Verschieben', 'Duplizieren', 'Teilen']);
+  assert.deepEqual(await page.locator('.sheet-actions-right button').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label'))), ['Verschieben', 'Duplizieren', 'Teilen']);
   await page.locator('.sheet button[aria-label=Duplizieren]').click();
   await page.waitForSelector('.pick-row');
   assert.deepEqual(await page.locator('.pick-row .pick-name').allInnerTexts(), ['Einkaufsliste', 'Haushalt']);

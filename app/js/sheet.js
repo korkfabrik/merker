@@ -284,12 +284,12 @@ export class ItemSheet {
     const save = h('button', { class: 'btn btn-primary btn-compact press', type: 'submit' }, t('sheet.save'));
     // Wiederholen nur mit Datum und Beschreibung (die Wiederholung steht in der Beschreibung)
     const recurrence = description && due ? recurrenceButton(storedRecurrence) : null;
-    // Speichern oben rechts. Unten links Löschen, rechts Erledigt (nur offen) oder Wieder öffnen (nur erledigt), Verschieben, Duplizieren, Teilen.
+    // Oben rechts Erledigt (nur offen) und Speichern. Unten links Löschen, rechts Wieder öffnen (nur erledigt), Verschieben, Duplizieren, Teilen.
+    const fields = () => ({ title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null });
+    const done = !isCompleted(item) && features.update
+      ? h('button', { class: 'btn btn-primary btn-compact btn-done press', type: 'button', 'aria-label': t('item.markDone'), title: t('item.markDone'), onclick: () => this.#complete(list, item, fields()) }, icon('check', 24))
+      : null;
     const right = [];
-    if (!isCompleted(item) && features.update) {
-      const fields = () => ({ title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null });
-      right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('item.markDone'), title: t('item.markDone'), onclick: () => this.#complete(list, item, fields()) }, icon('check', 22)));
-    }
     if (isCompleted(item)) {
       right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('item.reopen'), title: t('item.reopen'), onclick: () => this.#reopen(list, item) }, icon('reopen', 22)));
     }
@@ -314,7 +314,7 @@ export class ItemSheet {
         'div',
         { class: 'sheet-band', style: hueStyle(list.id) },
         h('div', { class: 'sheet-handle' }),
-        h('div', { class: 'sheet-head sheet-head-edit' }, h('span', { class: 'sheet-band-name' }, list.name), save),
+        h('div', { class: 'sheet-head sheet-head-edit' }, h('span', { class: 'sheet-band-name' }, list.name), h('div', { class: 'sheet-head-buttons' }, done, save)),
       ),
       h('div', { class: 'field' }, h('label', { class: 'field-label', for: 'sheet-title' }, t('item.title')), h('div', { class: 'title-row' }, prio, title)),
       checklistBox,

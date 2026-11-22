@@ -2,11 +2,15 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.1
+
+Der Knopf "Erledigt" im Dialog sitzt jetzt oben links neben "Speichern" statt unten bei den anderen Knöpfen.
+
 ## Version 1.1.0
 
 Schnell-Datum im Dialog und bei neuen Aufgaben in einer Zeile zum Wischen: Keine, Heute, Morgen, dann 1 bis 3 Wochen, Monate und Jahre ab heute. "Nächste Woche" fällt dort weg. Gibt es den Tag im Zielmonat nicht, gilt der letzte Tag des Monats (31. Januar plus 1 Monat = 28. Februar). Am PC zeigt der Mauszeiger auf einem Knopf das Datum.
 
-Neu im Dialog einer offenen Aufgabe: Knopf "Erledigt" unten rechts. Änderungen im Dialog werden vorher gespeichert.
+Neu im Dialog einer offenen Aufgabe: Knopf "Erledigt". Änderungen im Dialog werden vorher gespeichert.
 
 ## Version 1.0.2
 

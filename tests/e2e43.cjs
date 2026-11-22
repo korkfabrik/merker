@@ -23,6 +23,9 @@ const ok = (name) => console.log('OK  ', name);
   await page.locator('li.swipe', { hasText: 'Brot' }).locator('.item-title').click();
   await page.waitForSelector('.sheet');
   assert.equal(await page.locator('.sheet button[aria-label="Wieder öffnen"]').count(), 0);
+  // Haken oben links neben Speichern, nicht unten bei den anderen Knöpfen
+  assert.equal(await page.locator('.sheet-head-buttons button[aria-label="Erledigt"] + button[type=submit]').count(), 1);
+  assert.equal(await page.locator('.sheet-actions button[aria-label="Erledigt"]').count(), 0);
   await page.locator('.sheet input[name=title]').fill('Brot vom Bäcker');
   const n0 = (await calls()).length;
   await page.locator('.sheet button[aria-label="Erledigt"]').click();
