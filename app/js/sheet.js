@@ -284,15 +284,19 @@ export class ItemSheet {
     const save = h('button', { class: 'btn btn-primary btn-compact press', type: 'submit' }, t('sheet.save'));
     // Wiederholen nur mit Datum und Beschreibung (die Wiederholung steht in der Beschreibung)
     const recurrence = description && due ? recurrenceButton(storedRecurrence) : null;
-    // Oben rechts Erledigt (nur offen) und Speichern. Unten links Löschen, rechts Wieder öffnen (nur erledigt), Verschieben, Duplizieren, Teilen.
-    const fields = () => ({ title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null });
-    const done = !isCompleted(item) && features.update
-      ? h('button', { class: 'btn btn-primary btn-compact btn-done press', type: 'button', 'aria-label': t('item.markDone'), title: t('item.markDone'), onclick: () => this.#complete(list, item, fields()) }, icon('check', 24))
+    // Oben links der Abhak-Kreis wie in der Liste, rechts Speichern. Der Kreis schaltet nur um, erst Speichern übernimmt ihn.
+    // Unten links Löschen, rechts Verschieben, Duplizieren, Teilen.
+    const done = features.update
+      ? h('button', {
+          class: 'sheet-check press',
+          type: 'button',
+          'aria-label': t('item.markDone'),
+          title: t('item.markDone'),
+          'aria-pressed': String(isCompleted(item)),
+          onclick: () => done.setAttribute('aria-pressed', String(done.getAttribute('aria-pressed') !== 'true')),
+        })
       : null;
     const right = [];
-    if (isCompleted(item)) {
-      right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('item.reopen'), title: t('item.reopen'), onclick: () => this.#reopen(list, item) }, icon('reopen', 22)));
-    }
     if (canMove(this.store.get(), list)) {
       right.push(h('button', { class: 'btn btn-icon press', type: 'button', 'aria-label': t('sheet.move'), title: t('sheet.move'), onclick: () => this.#move(list, item) }, icon('move', 22)));
     }
@@ -314,7 +318,7 @@ export class ItemSheet {
         'div',
         { class: 'sheet-band', style: hueStyle(list.id) },
         h('div', { class: 'sheet-handle' }),
-        h('div', { class: 'sheet-head sheet-head-edit' }, h('span', { class: 'sheet-band-name' }, list.name), h('div', { class: 'sheet-head-buttons' }, done, save)),
+        h('div', { class: 'sheet-head sheet-head-edit' }, done, h('span', { class: 'sheet-band-name' }, list.name), save),
       ),
       h('div', { class: 'field' }, h('label', { class: 'field-label', for: 'sheet-title' }, t('item.title')), h('div', { class: 'title-row' }, prio, title)),
       checklistBox,
@@ -342,7 +346,7 @@ export class ItemSheet {
     title.addEventListener('input', () => (save.disabled = title.value.trim() === ''));
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      this.#save(list, item, { title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null });
+      this.#save(list, item, { title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null, done });
     });
 
     const scrim = h('div', { class: 'sheet-scrim', onclick: () => this.#leave() });
@@ -353,21 +357,17 @@ export class ItemSheet {
     form.focus({ preventScroll: true });
   }
 
+  // Speichern: erst die Felder, dann ein geänderter Erledigt-Status (Wiederholung und Erledigt-Datum rechnen mit dem neuen Stand).
   #save(list, item, fields) {
     const changes = this.#changes(item, fields);
     if (!changes) return;
+    const completed = fields.done ? fields.done.getAttribute('aria-pressed') === 'true' : isCompleted(item);
+    const statusChanged = completed !== isCompleted(item);
     this.#leave();
-    if (Object.keys(changes).length === 0) return;
-    this.repo.updateItem(list.id, item.uid, changes).catch((err) => this.#fail(err));
-  }
-
-  // Erledigen aus dem Dialog: erst die Änderungen im Dialog speichern, dann abhaken (Wiederholung rechnet mit dem neuen Stand).
-  #complete(list, item, fields) {
-    const changes = this.#changes(item, fields) ?? {};
-    this.#leave();
+    if (Object.keys(changes).length === 0 && !statusChanged) return;
     (async () => {
       if (Object.keys(changes).length) await this.repo.updateItem(list.id, item.uid, changes);
-      await completeWithUndo(this, list, { ...item, ...changes }, true);
+      if (statusChanged) await completeWithUndo(this, list, { ...item, ...changes }, completed);
     })().catch((err) => this.#fail(err));
   }
 
@@ -395,11 +395,6 @@ export class ItemSheet {
     duplicateWithUndo(this, list, item)
       .then((done) => done && this.#root && this.#leave())
       .catch(() => {});
-  }
-
-  #reopen(list, item) {
-    this.#leave();
-    completeWithUndo(this, list, item, false).catch(() => {});
   }
 
   #move(list, item) {

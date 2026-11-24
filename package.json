@@ -1,6 +1,6 @@
 {
   "name": "merker",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "description": "Phone-first PWA for Home Assistant to-do lists",
   "type": "module",

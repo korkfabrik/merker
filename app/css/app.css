@@ -1972,17 +1972,42 @@ body:has(#fab:not([hidden])) #content {
   padding: 0 20px;
 }
 
-.sheet-head-buttons {
+/* Abhak-Kreis im Kopf des Dialogs, wie in der Liste. Gefüllt mit Haken = erledigt (wird erst mit Speichern übernommen). */
+.sheet-check {
   flex: none;
-  display: flex;
-  gap: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
 }
 
-.btn-done {
-  width: 48px;
-  padding: 0;
-  display: grid;
-  place-items: center;
+.sheet-check::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0;
+}
+
+.sheet-check[aria-pressed='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.sheet-check[aria-pressed='true']::after {
+  opacity: 1;
+}
+
+.sheet-head-edit .sheet-band-name {
+  flex: 1;
 }
 .filter-seg {
   flex: 0 1 auto;

@@ -2,6 +2,10 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.2
+
+Erledigen im Dialog über einen Abhak-Kreis links vor dem Listennamen, wie in der Liste. Der Kreis schaltet nur um, erst "Speichern" übernimmt ihn zusammen mit den anderen Änderungen. Schließen ohne Speichern ändert nichts. Bei erledigten Aufgaben ist der Kreis gefüllt, Abwählen und Speichern öffnet sie wieder. Der Knopf "Wieder öffnen" unten entfällt.
+
 ## Version 1.1.1
 
 Der Knopf "Erledigt" im Dialog sitzt jetzt oben links neben "Speichern" statt unten bei den anderen Knöpfen.

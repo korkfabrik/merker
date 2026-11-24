@@ -1,11 +1,14 @@
-// Erledigen aus dem Dialog: Knopf "Erledigt" bei offenen Aufgaben. Änderungen im Dialog werden vorher gespeichert.
-// Bei erledigten Aufgaben steht stattdessen "Wieder öffnen".
+// Erledigen aus dem Dialog: Abhak-Kreis im Kopf links vor dem Listennamen, rechts Speichern.
+// Der Kreis schaltet nur um. Erst Speichern übernimmt ihn zusammen mit den anderen Änderungen. Schließen ohne Speichern ändert nichts.
+// Bei erledigten Aufgaben ist der Kreis gefüllt, Antippen und Speichern öffnet sie wieder.
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
 const APP = `${BASE}/local/merker/index.html`;
 const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
 const calls = () => getJson('/__mock/calls');
+const item = async (uid) => (await getJson('/__mock/items?entity=todo.einkaufsliste')).find((i) => i.uid === uid);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ok = (name) => console.log('OK  ', name);
 
 (async () => {
@@ -13,38 +16,62 @@ const ok = (name) => console.log('OK  ', name);
   const page = await (await browser.newContext({ locale: 'de-DE', viewport: { width: 412, height: 860 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  const open = async (text) => {
+    await page.locator('li.swipe', { hasText: text }).locator('.item-title').click();
+    await page.waitForSelector('.sheet .sheet-check');
+  };
+  const circle = () => page.locator('.sheet-head .sheet-check');
+  const closed = () => page.waitForSelector('.sheet-root', { state: 'detached' });
 
   await page.goto(APP);
   await page.waitForSelector('.list-tile');
   await page.locator('.list-tile', { hasText: 'Einkaufsliste' }).click();
   await page.waitForSelector('li.swipe');
 
-  // 1. Offene Aufgabe: Titel ändern, dann "Erledigt"
-  await page.locator('li.swipe', { hasText: 'Brot' }).locator('.item-title').click();
-  await page.waitForSelector('.sheet');
-  assert.equal(await page.locator('.sheet button[aria-label="Wieder öffnen"]').count(), 0);
-  // Haken oben links neben Speichern, nicht unten bei den anderen Knöpfen
-  assert.equal(await page.locator('.sheet-head-buttons button[aria-label="Erledigt"] + button[type=submit]').count(), 1);
-  assert.equal(await page.locator('.sheet-actions button[aria-label="Erledigt"]').count(), 0);
+  // 1. Kreis im Kopf vor dem Listennamen, Speichern rechts, kein Erledigt-Knopf unten
+  await open('Brot');
+  assert.equal(await page.locator('.sheet-head-edit > :first-child').getAttribute('class'), 'sheet-check press');
+  assert.equal(await page.locator('.sheet-head-edit > :last-child').getAttribute('type'), 'submit');
+  assert.equal(await circle().getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.locator('.sheet-actions button[aria-label="Wieder öffnen"], .sheet-actions button[aria-label="Erledigt"]').count(), 0);
+  ok('Abhak-Kreis links vor dem Listennamen, Speichern rechts');
+
+  // 2. Abhaken und ohne Speichern schließen: nichts gesendet
+  let n0 = (await calls()).length;
+  await circle().click();
+  assert.equal(await circle().getAttribute('aria-pressed'), 'true');
+  await sleep(300);
+  assert.equal((await calls()).length, n0, 'Abhaken hat schon gesendet');
+  await page.goBack();
+  await closed();
+  await sleep(300);
+  assert.equal((await calls()).length, n0);
+  assert.equal((await item('u1')).status, 'needs_action');
+  ok('Abhaken allein speichert nicht, Schließen verwirft');
+
+  // 3. Abhaken, Titel ändern, Speichern: erst Umbenennen, dann erledigt
+  await open('Brot');
+  await circle().click();
   await page.locator('.sheet input[name=title]').fill('Brot vom Bäcker');
-  const n0 = (await calls()).length;
-  await page.locator('.sheet button[aria-label="Erledigt"]').click();
-  await page.waitForSelector('.sheet-root', { state: 'detached' });
+  n0 = (await calls()).length;
+  await page.locator('.sheet button[type=submit]').click();
+  await closed();
   await page.waitForFunction(() => /Erledigt: Brot vom Bäcker/.test(document.querySelector('.snackbar')?.textContent ?? ''));
   await page.waitForFunction(async (n) => (await (await fetch('/__mock/calls')).json()).length >= n + 2, n0);
   const sent = (await calls()).slice(n0).map((c) => [c.service, c.data.rename ?? null, c.data.status ?? null]);
   assert.deepEqual(sent.slice(0, 2), [['update_item', 'Brot vom Bäcker', null], ['update_item', null, 'completed']]);
-  const brot = (await getJson('/__mock/items?entity=todo.einkaufsliste')).find((i) => i.uid === 'u1');
-  assert.deepEqual([brot.summary, brot.status], ['Brot vom Bäcker', 'completed']);
-  ok('Erledigt im Dialog: erst Änderung gespeichert, dann abgehakt');
+  assert.deepEqual([(await item('u1')).summary, (await item('u1')).status], ['Brot vom Bäcker', 'completed']);
+  ok('Speichern übernimmt Änderung und Erledigt');
 
-  // 2. Erledigte Aufgabe: "Wieder öffnen" statt "Erledigt"
+  // 4. Erledigte Aufgabe: Kreis gefüllt, Antippen und Speichern öffnet wieder
   await page.locator('.done-section, .done-toggle, button', { hasText: /Erledigt \(/ }).first().click();
-  await page.locator('li.swipe', { hasText: 'Brot vom Bäcker' }).locator('.item-title').click();
-  await page.waitForSelector('.sheet');
-  assert.equal(await page.locator('.sheet button[aria-label="Erledigt"]').count(), 0);
-  assert.equal(await page.locator('.sheet button[aria-label="Wieder öffnen"]').count(), 1);
-  ok('Erledigte Aufgabe: Knopf Wieder öffnen statt Erledigt');
+  await open('Brot vom Bäcker');
+  assert.equal(await circle().getAttribute('aria-pressed'), 'true');
+  await circle().click();
+  await page.locator('.sheet button[type=submit]').click();
+  await closed();
+  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.einkaufsliste')).json()).find((i) => i.uid === 'u1').status === 'needs_action');
+  ok('Erledigte Aufgabe: Kreis abwählen und Speichern öffnet sie wieder');
 
   assert.deepEqual(errors, []);
   await browser.close();
