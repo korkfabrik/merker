@@ -33,7 +33,7 @@ export function openNewTask({ state, store, repo, toast, initial = {}, listId = 
     'div',
     { class: 'field' },
     h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'new-due' }, t('item.due')), recurrence.button),
-    h('div', { class: 'date-row' }, due),
+    h('div', { class: 'date-row' }, due, h('span', { class: 'date-icon', 'aria-hidden': 'true' }, icon('calendar', 22))),
     quickDates(due),
   );
   // Unteraufgaben: erst nach Tipp auf "+ Unteraufgabe" sichtbar, damit der Dialog schlank bleibt

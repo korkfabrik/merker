@@ -73,9 +73,12 @@ const searchBar = new SearchBar({ topSlot, onInput: () => render() });
 // Einkaufsliste: Kacheln. Pro Liste lässt sich für diese Sitzung auf die normale Listenansicht umschalten.
 const classicView = new Set();
 let shopList = null;
+// Das Feld wird sofort geleert, damit man gleich den nächsten Artikel tippen kann. Leeren erst nach der Antwort von HA
+// hätte bei langsamem Netz das schon weiter Getippte gelöscht. Schlägt das Anlegen fehl, kommt der Text zurück.
 const shopAdd = async (text) => {
   if (!shopList) return;
-  if (await addShoppingItem({ store, repo, toast }, shopList, text)) shoppingBar.clear();
+  shoppingBar.clear();
+  if (!(await addShoppingItem({ store, repo, toast }, shopList, text))) shoppingBar.restore(text);
 };
 const shoppingBar = new ShoppingBar({ topSlot, onInput: () => render(), onSubmit: shopAdd });
 

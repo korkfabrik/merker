@@ -332,7 +332,7 @@ export class ItemSheet {
             'div',
             { class: 'field' },
             h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'sheet-due' }, t('item.due')), recurrence?.button ?? null),
-            h('div', { class: 'date-row' }, Object.assign(due, { id: 'sheet-due' })),
+            h('div', { class: 'date-row' }, Object.assign(due, { id: 'sheet-due' }), h('span', { class: 'date-icon', 'aria-hidden': 'true' }, icon('calendar', 22))),
             quickDates(due),
           )
         : null,

@@ -133,6 +133,14 @@ export class ShoppingBar {
     this.onInput();
   }
 
+  // Text nach einem Fehler zurückholen, aber nur, wenn inzwischen nichts Neues getippt wurde
+  restore(text) {
+    if (!this.#input || this.#input.value) return;
+    this.#input.value = text;
+    this.query = text;
+    this.onInput();
+  }
+
   unmount() {
     if (!this.#form) return;
     this.#form = null;

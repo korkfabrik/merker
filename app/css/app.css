@@ -628,9 +628,46 @@ body {
 }
 
 .date-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Datumsfeld: Android setzt seinen Pfeil fast an den Rand. Der eingebaute Knopf wird unsichtbar über das ganze Feld gelegt
+   (Antippen öffnet überall die Datumsauswahl), rechts steht ein eigenes Kalender-Symbol mit normalem Abstand. */
+.date-row .field-input[type='date'] {
+  position: relative;
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 52px;
+  text-align: left;
+}
+
+.date-row .field-input[type='date']::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.date-row .field-input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.date-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  color: var(--on-surface-variant);
+  pointer-events: none;
 }
 
 .btn-text {

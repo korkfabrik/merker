@@ -54,6 +54,7 @@ const calls = [];
 let seq = 0;
 let failNext = false;
 let dropOnAdd = false;
+let slowNext = 0; // nächste Aktion (call_service) erst nach so vielen Millisekunden beantworten
 const userData = {};
 let flowForbidden = false;
 let refuseUntil = 0;
@@ -161,6 +162,12 @@ const server = http.createServer((req, res) => {
     res.writeHead(200).end('ok');
     return;
   }
+  if (url.pathname === '/__mock/slow-next' && req.method === 'POST') {
+    // Langsames Netz nachstellen: die nächste Aktion kommt verzögert an
+    slowNext = Number(url.searchParams.get('ms') || 1500);
+    res.writeHead(200).end('ok');
+    return;
+  }
   if (url.pathname === '/__mock/echo' && req.method === 'POST') {
     // Unveränderten Stand einer Liste noch einmal schicken, wie HA nach einer eigenen Änderung
     const id = url.searchParams.get('entity');
@@ -221,8 +228,14 @@ wss.on('connection', (ws) => {
   sockets.add(s);
   ws.on('close', () => sockets.delete(s));
   send(ws, { type: 'auth_required', ha_version: '2026.9.0' });
-  ws.on('message', (raw) => {
+  const onMessage = (raw, delayed = false) => {
     const msg = JSON.parse(raw);
+    if (!delayed && slowNext && msg.type === 'call_service') {
+      const ms = slowNext;
+      slowNext = 0;
+      setTimeout(() => onMessage(raw, true), ms);
+      return;
+    }
     if (msg.type === 'auth') return send(ws, msg.access_token === 'tok' ? { type: 'auth_ok', ha_version: '2026.9.0' } : { type: 'auth_invalid', message: 'x' });
     const ok = (result = null) => send(ws, { id: msg.id, type: 'result', success: true, result });
     switch (msg.type) {
@@ -312,7 +325,8 @@ wss.on('connection', (ws) => {
       default:
         return send(ws, { id: msg.id, type: 'result', success: false, error: { code: 'unknown_command', message: msg.type } });
     }
-  });
+  };
+  ws.on('message', (raw) => onMessage(raw));
 });
 
 server.listen(PORT, () => console.log(`Mock-HA auf http://localhost:${PORT}`));

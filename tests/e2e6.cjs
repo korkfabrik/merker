@@ -1,6 +1,15 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
+// Wartet in Node, bis die Bedingung stimmt (page.waitForFunction wartet bei async-Funktionen nicht).
+const until = async (fn, ms = 8000) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await fn()) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Bedingung nicht erfüllt: ${fn}`);
+};
 const APP = `${BASE}/local/merker/index.html`;
 const SHOTS = process.env.SHOTS || require('node:path').join(__dirname, '.shots', 'shots6');
 require('node:fs').mkdirSync(SHOTS, { recursive: true });
@@ -110,7 +119,7 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   n0 = await count();
   await page.locator('.snackbar-action').click();
   await present('Brot');
-  await page.waitForFunction(async () => !(await (await fetch('/__mock/items?entity=todo.haushalt')).json()).some((i) => i.summary === 'Brot'));
+  await until(async () => !(await (await fetch(BASE + '/__mock/items?entity=todo.haushalt')).json()).some((i) => i.summary === 'Brot'));
   await settle();
   assert.ok((await serverItems()).some((i) => i.summary === 'Brot'));
   ok('Rückgängig: Eintrag steht wieder in der Quell-Liste und ist in der Ziel-Liste weg');

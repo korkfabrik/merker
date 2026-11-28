@@ -3,6 +3,15 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
+// Wartet in Node, bis die Bedingung stimmt (page.waitForFunction wartet bei async-Funktionen nicht).
+const until = async (fn, ms = 8000) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await fn()) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Bedingung nicht erfüllt: ${fn}`);
+};
 const APP = `${BASE}/local/merker/index.html`;
 const post = (p) => fetch(`${BASE}${p}`, { method: 'POST' });
 const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
@@ -44,9 +53,19 @@ const ok = (name) => console.log('OK  ', name);
   assert.ok(await inView(), 'Knopfleiste nach Scrollen nicht sichtbar');
   ok('Knopfleiste bleibt am unteren Rand sichtbar');
 
+  // 2b. Datumsfeld: eigenes Kalender-Symbol rechts mit Abstand zum Rand
+  const date = await page.evaluate(() => {
+    const input = document.querySelector('#sheet-due');
+    const icon = document.querySelector('.sheet .date-row .date-icon').getBoundingClientRect();
+    const field = input.getBoundingClientRect();
+    return { gap: field.right - icon.right };
+  });
+  assert.ok(date.gap >= 12, `Symbol zu nah am Rand: ${date.gap}`);
+  ok('Datumsfeld mit eigenem Kalender-Symbol und Abstand zum Rand');
+
   // 3. Speichern übernimmt Wichtig
   await page.locator('.sheet button[type=submit]').click();
-  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.haushalt')).json()).some((i) => i.summary === '❗ Lang'));
+  await until(async () => (await (await fetch(BASE + '/__mock/items?entity=todo.haushalt')).json()).some((i) => i.summary === '❗ Lang'));
   ok('Wichtig wird gespeichert');
 
   // 4. Neue Aufgabe: derselbe Schalter

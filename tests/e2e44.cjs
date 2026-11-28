@@ -4,6 +4,15 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
+// Wartet in Node, bis die Bedingung stimmt (page.waitForFunction wartet bei async-Funktionen nicht).
+const until = async (fn, ms = 8000) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await fn()) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Bedingung nicht erfüllt: ${fn}`);
+};
 const APP = `${BASE}/local/merker/index.html`;
 const post = (p) => fetch(`${BASE}${p}`, { method: 'POST' });
 const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
@@ -51,11 +60,11 @@ const ok = (name) => console.log('OK  ', name);
   await page.locator('li.swipe', { hasText: 'Aufräumen' }).locator('.item-title').click();
   await page.waitForSelector('.sheet .check-row');
   await page.locator('.sheet .check-row', { hasText: 'Boden' }).click();
-  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.haushalt')).json()).find((i) => i.summary === 'Aufräumen').description.includes('- [x] Boden'));
+  await until(async () => (await (await fetch(BASE + '/__mock/items?entity=todo.haushalt')).json()).find((i) => i.summary === 'Aufräumen').description.includes('- [x] Boden'));
   await page.locator('.sheet textarea[name=description]').fill('Keller und Garage');
   await page.locator('.sheet button[type=submit]').click();
   await page.waitForSelector('.sheet-root', { state: 'detached' });
-  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.haushalt')).json()).find((i) => i.summary === 'Aufräumen').description.startsWith('Keller und Garage'));
+  await until(async () => (await (await fetch(BASE + '/__mock/items?entity=todo.haushalt')).json()).find((i) => i.summary === 'Aufräumen').description.startsWith('Keller und Garage'));
   assert.equal(await stored(), 'Keller und Garage\n- [x] Regal\n- [x] Boden');
   ok('Speichern setzt freien Text und Unteraufgaben wieder zusammen');
 

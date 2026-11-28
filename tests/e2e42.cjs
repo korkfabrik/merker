@@ -5,6 +5,15 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
+// Wartet in Node, bis die Bedingung stimmt (page.waitForFunction wartet bei async-Funktionen nicht).
+const until = async (fn, ms = 8000) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await fn()) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Bedingung nicht erfüllt: ${fn}`);
+};
 const APP = `${BASE}/local/merker/index.html`;
 const post = (p) => fetch(`${BASE}${p}`, { method: 'POST' });
 const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
@@ -47,7 +56,7 @@ const ok = (name) => console.log('OK  ', name);
   await page.locator('.sheet button[aria-label="Verschieben"]').click();
   await page.locator('.pick-row', { hasText: 'Einfach' }).click();
   await page.waitForFunction(() => /Verschoben nach Einfach/.test(document.querySelector('.snackbar')?.textContent ?? ''));
-  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.einfach')).json()).some((i) => i.summary === 'Brot'));
+  await until(async () => (await (await fetch(BASE + '/__mock/items?entity=todo.einfach')).json()).some((i) => i.summary === 'Brot'));
   ok('Aufgabe ohne Datum und Beschreibung lässt sich weiter verschieben');
 
   // 3. Wochenansicht: Aufgabe antippen, darunter bleibt die Woche

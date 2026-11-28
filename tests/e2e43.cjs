@@ -4,6 +4,15 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const BASE = 'http://localhost:8123';
+// Wartet in Node, bis die Bedingung stimmt (page.waitForFunction wartet bei async-Funktionen nicht).
+const until = async (fn, ms = 8000) => {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await fn()) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error(`Bedingung nicht erfüllt: ${fn}`);
+};
 const APP = `${BASE}/local/merker/index.html`;
 const getJson = async (p) => (await fetch(`${BASE}${p}`)).json();
 const calls = () => getJson('/__mock/calls');
@@ -57,7 +66,7 @@ const ok = (name) => console.log('OK  ', name);
   await page.locator('.sheet button[type=submit]').click();
   await closed();
   await page.waitForFunction(() => /Erledigt: Brot vom Bäcker/.test(document.querySelector('.snackbar')?.textContent ?? ''));
-  await page.waitForFunction(async (n) => (await (await fetch('/__mock/calls')).json()).length >= n + 2, n0);
+  await until(async () => (await (await fetch(BASE + '/__mock/calls')).json()).length >= n0 + 2);
   const sent = (await calls()).slice(n0).map((c) => [c.service, c.data.rename ?? null, c.data.status ?? null]);
   assert.deepEqual(sent.slice(0, 2), [['update_item', 'Brot vom Bäcker', null], ['update_item', null, 'completed']]);
   assert.deepEqual([(await item('u1')).summary, (await item('u1')).status], ['Brot vom Bäcker', 'completed']);
@@ -70,7 +79,7 @@ const ok = (name) => console.log('OK  ', name);
   await circle().click();
   await page.locator('.sheet button[type=submit]').click();
   await closed();
-  await page.waitForFunction(async () => (await (await fetch('/__mock/items?entity=todo.einkaufsliste')).json()).find((i) => i.uid === 'u1').status === 'needs_action');
+  await until(async () => (await (await fetch(BASE + '/__mock/items?entity=todo.einkaufsliste')).json()).find((i) => i.uid === 'u1').status === 'needs_action');
   ok('Erledigte Aufgabe: Kreis abwählen und Speichern öffnet sie wieder');
 
   assert.deepEqual(errors, []);

@@ -2,6 +2,10 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.5
+
+Einkaufsansicht: Das Feld "Was brauchst du?" leert sich sofort beim Absenden. Vorher leerte es sich erst nach der Antwort von Home Assistant und löschte bei langsamem Netz den schon weiter getippten Artikel. Schlägt das Anlegen fehl, kommt der Text zurück. Datumsfeld im Dialog mit eigenem Kalender-Symbol, der Pfeil von Android saß zu dicht am Rand.
+
 ## Version 1.1.4
 
 Wichtig markieren über den Schalter "❗ Wichtig" rechts über dem Titel, im Stil von "Wiederholen", eingeschaltet rot. Er ersetzt den grauen Knopf "!" vor dem Titel, bei Bearbeiten und bei Neue Aufgabe. Die Knopfleiste unten im Dialog bleibt beim Scrollen am unteren Rand stehen und ist damit immer ganz zu sehen.
