@@ -20,7 +20,7 @@ const plus = (days) => { const d = new Date(); d.setDate(d.getDate() + days); re
   await page.locator('#btn-week').click();
   await page.waitForSelector('.week-day-head');
   assert.match(page.url(), /#\/woche$/);
-  assert.match(await page.locator('#view-title').innerText(), /^\d+\.(\/\d+\.)? Woche$/);
+  assert.match(await page.locator('#view-title').innerText(), /^KW \d+(\/\d+)?$/);
   assert.equal(await page.locator('.week-day-head').count(), 7);
   assert.match(await page.locator('.week-day-head').first().textContent(), /^Heute/);
   assert.match(await page.locator('.week-day-head').nth(1).textContent(), /^Morgen/);
@@ -78,12 +78,12 @@ const plus = (days) => { const d = new Date(); d.setDate(d.getDate() + days); re
 
   // KW: Anzeige, Auswahl, freie Eingabe
   const kwText = await page.locator('#view-title').innerText();
-  assert.match(kwText, /^\d+\.(\/\d+\.)? Woche$/);
+  assert.match(kwText, /^KW \d+(\/\d+)?$/);
   const kw = Number(kwText.match(/\d+/)[0]);
   await page.locator('.week-range').click();
   await page.waitForSelector('.pick-row');
   assert.equal(await page.locator('.pick-row').count(), 13);
-  assert.match(await page.locator('.pick-row').nth(1).innerText(), new RegExp(`${kw === 53 || kw === 52 ? '\\d+' : kw + 1}\\. Woche`));
+  assert.match(await page.locator('.pick-row').nth(1).innerText(), new RegExp(`KW ${kw === 53 || kw === 52 ? '\\d+' : kw + 1}`));
   await page.locator('.pick-row').nth(1).click();
   await page.waitForSelector('.sheet-root', { state: 'detached' });
   await page.waitForFunction(() => !document.querySelector('.week-prev').disabled);
@@ -95,7 +95,7 @@ const plus = (days) => { const d = new Date(); d.setDate(d.getDate() + days); re
   const target = kw >= 50 ? 2 : kw + 3;
   await page.locator('.pick-number').fill(String(target));
   await page.locator('.pick-number-form button').click();
-  await page.waitForFunction((n) => document.querySelector('#view-title').textContent === `${n}. Woche`, target);
+  await page.waitForFunction((n) => document.querySelector('#view-title').textContent === `KW ${n}`, target);
   assert.equal(new Date((await page.locator('.week-day-head').first().getAttribute('data-day')) + 'T12:00').getDay(), 1);
   await page.waitForSelector('.sheet-root', { state: 'detached' });
   await page.locator('#view-title').click();

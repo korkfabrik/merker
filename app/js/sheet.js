@@ -1,7 +1,7 @@
 // Bearbeiten-Dialog (Bottom Sheet) für einen Eintrag. Eigene Adresse: #/liste/<entity>/<uid>.
 // Das Sheet wird nur einmal gebaut. Spätere Änderungen im Store zeichnen es nicht neu, getippter Text bleibt erhalten.
 import { h, icon } from './ui.js';
-import { stripPrio, isPrio, withPrio, parseDue, withTimeOf, isCompleted, parseChecklist, toggleChecklistLine, addChecklistLine, setChecklistText, removeLine, insertLine, moveChecklistLine, moveChecklistLineToEnd, getRecurrence, stripRecurrence, setRecurrence, RECURRENCES, recurrenceLabel } from './rules.js';
+import { stripPrio, isPrio, withPrio, parseDue, withTimeOf, isCompleted, parseChecklist, splitChecklist, joinChecklist, toggleChecklistLine, addChecklistLine, setChecklistText, removeLine, insertLine, moveChecklistLine, moveChecklistLineToEnd, getRecurrence, stripRecurrence, setRecurrence, RECURRENCES, recurrenceLabel } from './rules.js';
 import { attachReorder } from './reorder.js';
 import { recurrenceButton } from './recurfield.js';
 import { attachSwipe } from './swipe.js';
@@ -102,7 +102,12 @@ export class ItemSheet {
     // Die Zeile "🔁 …" steht nicht im Textfeld, sondern als Auswahl "Wiederholen". Gespeichert wird sie wieder in der Beschreibung.
     const storedRecurrence = getRecurrence(item.description);
     const withStoredRecurrence = (text) => setRecurrence(text, storedRecurrence);
-    if (description) description.value = stripRecurrence(item.description ?? '');
+    // Unteraufgaben stehen ebenfalls nicht im Textfeld, sondern als Kästchen darüber. body hält die ganze Beschreibung
+    // (ohne Wiederholung), das Textfeld nur den freien Text. Beim Speichern wird beides wieder zusammengesetzt.
+    let body = stripRecurrence(item.description ?? '');
+    if (description) description.value = splitChecklist(body).text;
+    // Ganze Beschreibung aus Textfeld und Unteraufgaben. Unverändertes Textfeld: body bleibt wie er ist (keine unnötige Änderung).
+    const currentDescription = () => (description.value === splitChecklist(body).text ? body : joinChecklist(description.value, splitChecklist(body).checklist));
     if (description) description.id = 'sheet-description';
     // Kleiner Knopf: heutiges Datum (TT.MM.JJJJ) als Anfang der ersten Zeile der Beschreibung.
     // Nach dem Datum ein Leerzeichen, dort steht der Cursor zum Weiterschreiben. Vorhandener Text folgt in der nächsten Zeile. Gespeichert wird erst mit Speichern.
@@ -149,15 +154,16 @@ export class ItemSheet {
           t('sheet.subtaskButton'),
         )
       : null;
+    // Neue Unteraufgaben sofort speichern, zusammen mit dem freien Text, wie er gerade im Textfeld steht.
     const persistDescription = (next) => {
-      const previous = description.value;
-      description.value = next;
+      const previous = body;
+      body = joinChecklist(description.value, splitChecklist(next).checklist);
       renderChecklist();
-      const stored = withStoredRecurrence(next).trim() || null;
+      const stored = withStoredRecurrence(body).trim() || null;
       this.repo.updateItem(list.id, item.uid, { description: stored }).then(
         () => (item = { ...item, description: stored }),
         (err) => {
-          description.value = previous;
+          body = previous;
           renderChecklist();
           this.#fail(err);
         },
@@ -168,7 +174,7 @@ export class ItemSheet {
       const text = addInput.value.trim();
       if (!text) return;
       addInput.value = '';
-      persistDescription(addChecklistLine(description.value, text));
+      persistDescription(addChecklistLine(body, text));
     };
     addInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
@@ -178,13 +184,13 @@ export class ItemSheet {
     });
     // Nach links wischen löscht die Unteraufgabe. Rückgängig setzt dieselbe Zeile an dieselbe Stelle zurück.
     const removeSub = (entry) => {
-      const { text, line } = removeLine(description.value, entry.index);
+      const { text, line } = removeLine(body, entry.index);
       persistDescription(text);
       this.toast.show(t('sheet.subtaskDeleted'), {
         actionLabel: t('common.undo'),
         onAction: () => {
           const stored = this.store.get().items[list.id]?.find((candidate) => candidate.uid === item.uid)?.description;
-          const next = insertLine(stored != null ? stripRecurrence(stored) : description.value, entry.index, line);
+          const next = insertLine(stored != null ? stripRecurrence(stored) : body, entry.index, line);
           if (this.#key === key) persistDescription(next);
           else this.repo.updateItem(list.id, item.uid, { description: withStoredRecurrence(next).trim() || null }).catch((err) => this.#fail(err));
         },
@@ -192,7 +198,7 @@ export class ItemSheet {
     };
     function renderChecklist() {
       if (!checklistBox) return;
-      const { items, total, done } = parseChecklist(description.value);
+      const { items, total, done } = parseChecklist(body);
       const rows = items.map((entry) => {
         const button = h(
           'button',
@@ -202,7 +208,7 @@ export class ItemSheet {
             role: 'checkbox',
             'aria-checked': String(entry.checked),
             onclick: () => {
-              let next = toggleChecklistLine(description.value, entry.index);
+              let next = toggleChecklistLine(body, entry.index);
               if (!entry.checked && getSubDoneLast()) next = moveChecklistLineToEnd(next, entry.index);
               persistDescription(next);
             },
@@ -219,7 +225,7 @@ export class ItemSheet {
             if (finished) return;
             finished = true;
             const text = input.value.trim();
-            if (save && text && text !== entry.text) persistDescription(setChecklistText(description.value, entry.index, text));
+            if (save && text && text !== entry.text) persistDescription(setChecklistText(body, entry.index, text));
             else renderChecklist();
           };
           input.addEventListener('keydown', (event) => {
@@ -247,7 +253,7 @@ export class ItemSheet {
       });
       const subList = h('ul', { class: 'plain-list sub-list' }, rows);
       attachReorder(subList, () => checklistBox.closest('.sheet'), (uid, previousUid) =>
-        persistDescription(moveChecklistLine(description.value, Number(uid), previousUid === null ? null : Number(previousUid))),
+        persistDescription(moveChecklistLine(body, Number(uid), previousUid === null ? null : Number(previousUid))),
       );
       // Ohne Unteraufgaben bleibt der Bereich zu, bis "+ Unteraufgabe" angetippt wird
       checklistBox.hidden = total === 0 && !subsOpen;
@@ -259,12 +265,11 @@ export class ItemSheet {
       );
     }
     renderChecklist();
-    if (description) description.addEventListener('input', renderChecklist);
 
     // Links, Adressen und Nummern aus Titel und Beschreibung als antippbare Knöpfe.
     const linkBox = h('div', { class: 'link-chips', role: 'group', 'aria-label': t('sheet.links'), hidden: true });
     const renderLinks = () => {
-      const found = findLinks(`${title.value}\n${description?.value ?? ''}`);
+      const found = findLinks(`${title.value}\n${description ? currentDescription() : ''}`);
       linkBox.replaceChildren(
         ...found.map((entry) =>
           h(
@@ -320,17 +325,8 @@ export class ItemSheet {
         h('div', { class: 'sheet-handle' }),
         h('div', { class: 'sheet-head sheet-head-edit' }, done, h('span', { class: 'sheet-band-name' }, list.name), save),
       ),
+      // Gleiche Reihenfolge wie bei einer neuen Aufgabe: Titel, Fälligkeit, Unteraufgaben, Beschreibung
       h('div', { class: 'field' }, h('label', { class: 'field-label', for: 'sheet-title' }, t('item.title')), h('div', { class: 'title-row' }, prio, title)),
-      checklistBox,
-      linkBox,
-      description
-        ? h(
-            'div',
-            { class: 'field' },
-            h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'sheet-description' }, t('item.description')), h('span', { class: 'label-btns' }, subButton, dateStamp)),
-            description,
-          )
-        : null,
       due
         ? h(
             'div',
@@ -340,13 +336,23 @@ export class ItemSheet {
             quickDates(due),
           )
         : null,
+      checklistBox,
+      description
+        ? h(
+            'div',
+            { class: 'field' },
+            h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'sheet-description' }, t('item.description')), h('span', { class: 'label-btns' }, subButton, dateStamp)),
+            description,
+          )
+        : null,
+      linkBox,
       h('div', { class: 'sheet-actions' }, actions),
     );
 
     title.addEventListener('input', () => (save.disabled = title.value.trim() === ''));
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      this.#save(list, item, { title, prio, description, due, originalDue, recurrence: recurrence?.state ?? null, done });
+      this.#save(list, item, { title, prio, description, descriptionText: description ? currentDescription : null, due, originalDue, recurrence: recurrence?.state ?? null, done });
     });
 
     const scrim = h('div', { class: 'sheet-scrim', onclick: () => this.#leave() });
@@ -380,7 +386,7 @@ export class ItemSheet {
     if (summary !== item.summary) changes.summary = summary;
     if (fields.description) {
       const recurrence = fields.recurrence ? fields.recurrence.value || null : getRecurrence(item.description);
-      const next = setRecurrence(fields.description.value, recurrence).trim() || null;
+      const next = setRecurrence(fields.descriptionText(), recurrence).trim() || null;
       if (next !== (item.description || null)) changes.description = next;
     }
     if (fields.due) {

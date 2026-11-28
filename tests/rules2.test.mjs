@@ -31,4 +31,13 @@ assert.deepEqual(r.moveLosses({ due: '2026-11-20', description: '  ' }, none), [
 assert.deepEqual(r.moveLosses({ due: '2026-11-20T09:30:00', description: null }, { ...all, dueDatetime: false }), ['time']);
 assert.deepEqual(r.moveLosses({ due: '2026-11-20T09:30:00', description: 'x' }, none), ['date', 'description']);
 assert.deepEqual(r.moveLosses({ due: null, description: '- [ ] A' }, { ...all, description: false }), ['description']);
+// Dialog: freier Text und Unteraufgaben getrennt, beim Speichern wieder zusammen. Erledigt-Datum bleibt letzte Zeile.
+assert.deepEqual(r.splitChecklist('Kartons\n- [ ] A\n- [x] B\nNotiz'), { text: 'Kartons\nNotiz', checklist: '- [ ] A\n- [x] B' });
+assert.deepEqual(r.splitChecklist('- [ ] A'), { text: '', checklist: '- [ ] A' });
+assert.equal(r.joinChecklist('Kartons\nNotiz', '- [ ] A\n- [x] B'), 'Kartons\nNotiz\n- [ ] A\n- [x] B');
+assert.equal(r.joinChecklist('', '- [ ] A'), '- [ ] A');
+assert.equal(r.joinChecklist('Text\n✓ 08.11.2026', '- [x] A'), 'Text\n- [x] A\n✓ 08.11.2026');
+assert.equal(r.joinChecklist('Text  \n\n', ''), 'Text');
+const both = 'Frei\n- [ ] A\n- [ ] B';
+assert.equal(r.joinChecklist(r.splitChecklist(both).text, r.splitChecklist(both).checklist), both);
 console.log('rules2 (Wiederholen, Erledigt-Datum, Unteraufgaben ordnen): alle Tests bestanden');

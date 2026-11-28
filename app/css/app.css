@@ -1728,6 +1728,17 @@ body:has(#fab:not([hidden])) #content {
   margin-right: 0;
 }
 
+/* Untere Knöpfe im Dialog zurückhaltend: Umriss in Textfarbe, Löschen nur mit rotem Symbol. "Speichern" oben bleibt die einzige kräftige Fläche. */
+.sheet-actions .btn-icon {
+  background: transparent;
+  color: var(--on-surface-variant);
+  border: 1px solid var(--outline);
+}
+
+.sheet-actions .btn-icon.btn-danger {
+  color: var(--error);
+}
+
 .sheet-actions .btn-primary {
   flex: none;
   padding-left: 16px;

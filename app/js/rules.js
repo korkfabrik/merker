@@ -224,6 +224,21 @@ export function moveChecklistLineToEnd(description, index) {
   return lines.join('\n');
 }
 
+// Beschreibung für den Dialog aufteilen: freier Text (ohne Unteraufgaben) und die Unteraufgaben-Zeilen.
+export function splitChecklist(description) {
+  const lines = String(description ?? '').split('\n');
+  const text = lines.filter((line) => !CHECK_LINE.test(line));
+  const checklist = lines.filter((line) => CHECK_LINE.test(line));
+  return { text: text.join('\n').replace(/^\s*\n/, '').replace(/\s+$/, ''), checklist: checklist.join('\n') };
+}
+
+// Wieder zusammensetzen: freier Text, darunter die Unteraufgaben, ein Erledigt-Datum bleibt die letzte Zeile.
+export function joinChecklist(text, checklist) {
+  const lines = String(text ?? '').replace(/\s+$/, '').split('\n');
+  const stamp = DONE_STAMP.test(lines.at(-1) ?? '') ? lines.pop() : '';
+  return [lines.join('\n').replace(/\s+$/, ''), checklist, stamp].filter(Boolean).join('\n');
+}
+
 // Erledigt-Datum: letzte Zeile "✓ 08.11.2026". Beim Wieder-Öffnen fällt sie weg.
 const DONE_STAMP = /^✓ \S+$/;
 const dateStamp = (date) => date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });

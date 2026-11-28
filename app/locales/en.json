@@ -191,7 +191,7 @@
   "search.tasks": "Tasks",
   "settings.accent": "Accent color",
   "settings.appName": "App name",
-  "settings.appNameHint": "Shown at the top of the home screen and in the window title. The name under the app icon comes from the manifest.json file.",
+  "settings.appNameHint": "Shown at the top of the home screen and in the window title. The name under the app icon stays Merker.",
   "settings.appearance": "Appearance",
   "settings.compact": "Compact view",
   "settings.compactHint": "Tighter rows, more tasks at a glance.",

@@ -2,6 +2,14 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.3
+
+Aus dem UI-Review:
+- Unteraufgaben stehen im Dialog nur noch als Kästchen. Im Feld Beschreibung steht nur der freie Text, beim Speichern kommt beides wieder zusammen.
+- Bearbeiten hat dieselbe Reihenfolge wie Neue Aufgabe: Titel, Fälligkeit, Unteraufgaben, Beschreibung.
+- Die Knöpfe unten im Dialog sind nur noch umrandet, Löschen mit rotem Symbol. "Speichern" ist die einzige kräftige Fläche.
+- Einkaufsansicht ohne Plus-Knopf, Neues kommt über das Feld oben. Wochentitel als "KW 48/49". Hinweis zum App-Namen ohne Dateinamen.
+
 ## Version 1.1.2
 
 Erledigen im Dialog über einen Abhak-Kreis links vor dem Listennamen, wie in der Liste. Der Kreis schaltet nur um, erst "Speichern" übernimmt ihn zusammen mit den anderen Änderungen. Schließen ohne Speichern ändert nichts. Bei erledigten Aufgaben ist der Kreis gefüllt, Abwählen und Speichern öffnet sie wieder. Der Knopf "Wieder öffnen" unten entfällt.

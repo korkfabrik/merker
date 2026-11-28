@@ -160,7 +160,8 @@ function renderNow() {
   sortButton.classList.toggle('active', sortMode.value && !sortButton.hidden);
   sortButton.setAttribute('aria-pressed', String(sortMode.value));
   currentListId = view.name === 'list' ? view.id : null;
-  fab.hidden = !['lists', 'list'].includes(view.name) || !store.get().lists.some((list) => list.available && list.features.create);
+  // In der Einkaufsansicht kommt Neues über das Feld oben, der Plus-Knopf würde nur Kacheln verdecken
+  fab.hidden = !['lists', 'list'].includes(view.name) || shopping || !store.get().lists.some((list) => list.available && list.features.create);
   if (!shopping) shoppingBar.unmount();
   if (view.name === 'search') searchBar.mount();
   else searchBar.unmount();
