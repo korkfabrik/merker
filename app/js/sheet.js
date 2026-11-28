@@ -92,9 +92,14 @@ export class ItemSheet {
 
     const title = h('input', { class: 'field-input', name: 'title', id: 'sheet-title', type: 'text', value: stripPrio(item.summary), enterkeyhint: 'done' });
     const prio = h('button', { class: 'label-btn prio-toggle press', type: 'button', name: 'prio', 'aria-pressed': String(isPrio(item.summary)), 'aria-label': t('item.prioToggle') }, h('span', { 'aria-hidden': 'true' }, '❗'), t('item.prio'));
+    // Wer gerade im Titel tippt, behält die Tastatur. Sonst springt nichts in den Titel und die Tastatur bleibt zu.
+    let typingTitle = false;
+    prio.addEventListener('pointerdown', () => (typingTitle = document.activeElement === title));
     prio.addEventListener('click', () => {
       prio.setAttribute('aria-pressed', String(prio.getAttribute('aria-pressed') !== 'true'));
-      title.focus({ preventScroll: true });
+      if (typingTitle) title.focus({ preventScroll: true });
+      else prio.blur();
+      typingTitle = false;
     });
     const description = features.description
       ? h('textarea', { class: 'field-input', name: 'description', rows: '3' })

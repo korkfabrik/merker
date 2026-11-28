@@ -37,9 +37,11 @@ const ok = (name) => console.log('OK  ', name);
   const prio = page.locator('.sheet .label-row:has(label[for=sheet-title]) .prio-toggle');
   assert.match(await prio.innerText(), /❗\s*Wichtig/);
   assert.equal(await prio.getAttribute('aria-pressed'), 'false');
+  await page.evaluate(() => document.activeElement?.blur());
   await prio.click();
+  assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'sheet-title', 'Wichtig springt in den Titel');
   assert.equal(await prio.getAttribute('aria-pressed'), 'true');
-  ok('Bearbeiten: Schalter Wichtig über dem Titel');
+  ok('Bearbeiten: Schalter Wichtig über dem Titel, springt nicht in den Titel');
 
   // 2. Knopfleiste ist ohne Scrollen sichtbar und bleibt nach Scrollen unten
   const sheetBox = await page.locator('.sheet').boundingBox();
@@ -73,7 +75,11 @@ const ok = (name) => console.log('OK  ', name);
   await page.locator('#fab').click();
   await page.waitForSelector('#new-title');
   assert.equal(await page.locator('.sheet .label-row:has(label[for=new-title]) .prio-toggle').count(), 1);
-  ok('Neue Aufgabe: Schalter Wichtig über dem Titel');
+  // Beim Tippen im Titel bleibt der Fokus dort (Tastatur bleibt offen)
+  await page.locator('#new-title').fill('Test');
+  await page.locator('.sheet .prio-toggle').click();
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'new-title');
+  ok('Neue Aufgabe: Schalter Wichtig über dem Titel, beim Tippen bleibt der Fokus im Titel');
 
   assert.deepEqual(errors, []);
   await browser.close();

@@ -2,6 +2,10 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.6
+
+Antippen von "❗ Wichtig" springt nicht mehr in den Titel und öffnet keine Tastatur. Wer gerade im Titel tippt, behält die Tastatur.
+
 ## Version 1.1.5
 
 Einkaufsansicht: Das Feld "Was brauchst du?" leert sich sofort beim Absenden. Vorher leerte es sich erst nach der Antwort von Home Assistant und löschte bei langsamem Netz den schon weiter getippten Artikel. Schlägt das Anlegen fehl, kommt der Text zurück. Datumsfeld im Dialog mit eigenem Kalender-Symbol, der Pfeil von Android saß zu dicht am Rand.
