@@ -21,7 +21,7 @@ export function openNewTask({ state, store, repo, toast, initial = {}, listId = 
   history.pushState({ n: (history.state?.n ?? 0) + 1, picker: true, newTask: true }, '', location.href);
 
   const title = h('input', { class: 'field-input', name: 'title', id: 'new-title', type: 'text', autocapitalize: 'sentences', enterkeyhint: 'done' });
-  const prio = h('button', { class: 'prio-toggle press', type: 'button', name: 'prio', 'aria-pressed': 'false', 'aria-label': t('item.prioToggle') }, '❗');
+  const prio = h('button', { class: 'label-btn prio-toggle press', type: 'button', name: 'prio', 'aria-pressed': 'false', 'aria-label': t('item.prioToggle') }, h('span', { 'aria-hidden': 'true' }, '❗'), t('item.prio'));
   prio.addEventListener('click', () => {
     prio.setAttribute('aria-pressed', String(prio.getAttribute('aria-pressed') !== 'true'));
     title.focus({ preventScroll: true });
@@ -239,7 +239,7 @@ export function openNewTask({ state, store, repo, toast, initial = {}, listId = 
     'form',
     { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': t('newTask.title') },
     band,
-    h('div', { class: 'field' }, h('label', { class: 'field-label', for: 'new-title' }, t('item.title')), h('div', { class: 'title-row' }, prio, title), suggest, multi),
+    h('div', { class: 'field' }, h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'new-title' }, t('item.title')), prio), title, suggest, multi),
     dueField,
     subField,
     descriptionField,

@@ -91,7 +91,7 @@ export class ItemSheet {
     const originalDue = parseDue(item.due)?.date ?? '';
 
     const title = h('input', { class: 'field-input', name: 'title', id: 'sheet-title', type: 'text', value: stripPrio(item.summary), enterkeyhint: 'done' });
-    const prio = h('button', { class: 'prio-toggle press', type: 'button', name: 'prio', 'aria-pressed': String(isPrio(item.summary)), 'aria-label': t('item.prioToggle') }, '❗');
+    const prio = h('button', { class: 'label-btn prio-toggle press', type: 'button', name: 'prio', 'aria-pressed': String(isPrio(item.summary)), 'aria-label': t('item.prioToggle') }, h('span', { 'aria-hidden': 'true' }, '❗'), t('item.prio'));
     prio.addEventListener('click', () => {
       prio.setAttribute('aria-pressed', String(prio.getAttribute('aria-pressed') !== 'true'));
       title.focus({ preventScroll: true });
@@ -326,7 +326,7 @@ export class ItemSheet {
         h('div', { class: 'sheet-head sheet-head-edit' }, done, h('span', { class: 'sheet-band-name' }, list.name), save),
       ),
       // Gleiche Reihenfolge wie bei einer neuen Aufgabe: Titel, Fälligkeit, Unteraufgaben, Beschreibung
-      h('div', { class: 'field' }, h('label', { class: 'field-label', for: 'sheet-title' }, t('item.title')), h('div', { class: 'title-row' }, prio, title)),
+      h('div', { class: 'field' }, h('div', { class: 'label-row' }, h('label', { class: 'field-label', for: 'sheet-title' }, t('item.title')), prio), title),
       due
         ? h(
             'div',
@@ -346,7 +346,7 @@ export class ItemSheet {
           )
         : null,
       linkBox,
-      h('div', { class: 'sheet-actions' }, actions),
+      h('div', { class: 'sheet-actions sheet-actions-bar' }, actions),
     );
 
     title.addEventListener('input', () => (save.disabled = title.value.trim() === ''));

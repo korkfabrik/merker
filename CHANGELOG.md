@@ -2,6 +2,10 @@
 
 Neueste Version oben. Jede Version hat eine eigene Überschrift.
 
+## Version 1.1.4
+
+Wichtig markieren über den Schalter "❗ Wichtig" rechts über dem Titel, im Stil von "Wiederholen", eingeschaltet rot. Er ersetzt den grauen Knopf "!" vor dem Titel, bei Bearbeiten und bei Neue Aufgabe. Die Knopfleiste unten im Dialog bleibt beim Scrollen am unteren Rand stehen und ist damit immer ganz zu sehen.
+
 ## Version 1.1.3
 
 Aus dem UI-Review:

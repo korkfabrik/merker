@@ -70,14 +70,14 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   assert.deepEqual([c.service, c.data, c.target], ['add_item', { item: 'Zahnpasta' }, { entity_id: 'todo.einkaufsliste' }]);
   ok('Normale Eingabe legt Eintrag in der geöffneten Liste an');
 
-  // C. Prio-Eingabe: Knopf vor dem Titel
+  // C. Prio-Eingabe: Schalter "Wichtig" rechts über dem Titel
   await page.locator('#fab').click();
   await page.waitForSelector('.sheet input[name=title]');
   const pk = page.locator('.sheet .prio-toggle');
   assert.equal(await pk.getAttribute('aria-pressed'), 'false');
   const pb = await pk.boundingBox();
   const tb = await page.locator('.sheet input[name=title]').boundingBox();
-  assert.ok(pb.x + pb.width <= tb.x + 1, 'Knopf links vom Titel');
+  assert.ok(pb.y + pb.height <= tb.y + 1 && pb.x + pb.width > tb.x + tb.width / 2, 'Schalter rechts über dem Titel');
   await pk.click();
   assert.equal(await pk.getAttribute('aria-pressed'), 'true');
   await page.locator('.sheet input[name=title]').fill('Steuer erklären');
@@ -90,7 +90,7 @@ const ok = (name) => { steps.push(name); console.log('OK  ', name); };
   await addVia('Ohne Prio danach');
   await settle();
   assert.equal((await calls()).at(-1).data.item, 'Ohne Prio danach');
-  ok('Prio-Knopf im Dialog: ❗ vor dem Titel, danach frisch ohne Prio');
+  ok('Schalter Wichtig im Dialog: ❗ vor dem Titel, danach frisch ohne Prio');
 
   // D. Zwei Einträge mit gleichem Titel: der richtige wird erledigt
   await addVia('Doppelt');

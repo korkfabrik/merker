@@ -976,27 +976,14 @@ body:has(#fab:not([hidden])) #content {
   color: var(--on-primary-container);
   font-weight: 600;
 }
+/* Schalter "❗ Wichtig" rechts über dem Titel, im Stil von "Wiederholen". Eingeschaltet rot. */
 .prio-toggle {
   flex: none;
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border: 2px solid var(--outline);
-  border-radius: var(--radius-card);
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-  filter: grayscale(1);
-  opacity: 0.55;
-  cursor: pointer;
 }
 
 .prio-toggle[aria-pressed='true'] {
-  filter: none;
-  opacity: 1;
-  border-color: var(--error);
-  background: var(--error-container);
+  background: var(--error);
+  color: var(--bg);
 }
 
 .prio-toggle:disabled {
@@ -1663,16 +1650,6 @@ body:has(#fab:not([hidden])) #content {
 .filter-chip {
   font-size: 13.5px;
 }
-.title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.title-row .field-input {
-  flex: 1 1 auto;
-  min-width: 0;
-}
 .pick-check {
   color: var(--primary);
   font-weight: 700;
@@ -1737,6 +1714,17 @@ body:has(#fab:not([hidden])) #content {
 
 .sheet-actions .btn-icon.btn-danger {
   color: var(--error);
+}
+
+/* Knopfleiste im Dialog bleibt beim Scrollen unten stehen, wie der Kopf oben */
+.sheet-actions-bar {
+  position: sticky;
+  bottom: calc(-20px - env(safe-area-inset-bottom));
+  z-index: 1;
+  margin: 0 -20px calc(-20px - env(safe-area-inset-bottom));
+  padding: 10px 20px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--outline);
 }
 
 .sheet-actions .btn-primary {

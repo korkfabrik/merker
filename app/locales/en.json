@@ -84,6 +84,7 @@
   "item.dragHandle": "Move",
   "item.due": "Due date",
   "item.markDone": "Done",
+  "item.prio": "Important",
   "item.prioToggle": "Mark as important",
   "item.queued": "Waiting for connection",
   "item.reopen": "Reopen",

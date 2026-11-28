@@ -92,7 +92,7 @@ npm run screenshots           # screenshots for this README
 - `scripts/`: set the version, build a zip, screenshots
 - `ha/`: update script for Home Assistant
 - `CHANGELOG.md`: all versions (German)
-- `CLAUDE.md`: rules and decisions for working on Merker with Claude Code. Merker is developed with AI assistance. It has had more than 60 releases so far, is used every day by its author and is covered by 39 browser tests with more than 200 checks against a mock Home Assistant server.
+- `CLAUDE.md`: rules and decisions for working on Merker with Claude Code. Merker is developed with AI assistance. It has had more than 60 releases so far, is used every day by its author and is covered by 40 browser tests with more than 200 checks against a mock Home Assistant server.
 
 ## License
 

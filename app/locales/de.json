@@ -84,6 +84,7 @@
   "item.dragHandle": "Verschieben",
   "item.due": "Fälligkeit",
   "item.markDone": "Erledigt",
+  "item.prio": "Wichtig",
   "item.prioToggle": "Als Prio markieren",
   "item.queued": "Wartet auf Verbindung",
   "item.reopen": "Wieder öffnen",

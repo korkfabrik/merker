@@ -15,7 +15,7 @@ e2e() {
     failed=1
   fi
 }
-for t in e2e e2e2 e2e4 e2e6 e2e7 e2e10 e2e11 e2e14 e2e15 e2e16 e2e17 e2e18 e2e19 e2e20 e2e21 e2e22 e2e23 e2e24 e2e25 e2e26 e2e27 e2e28 e2e29 e2e30 e2e31 e2e32 e2e33 e2e34 e2e36 e2e37 e2e38 e2e39 e2e41 e2e42 e2e43 e2e44; do
+for t in e2e e2e2 e2e4 e2e6 e2e7 e2e10 e2e11 e2e14 e2e15 e2e16 e2e17 e2e18 e2e19 e2e20 e2e21 e2e22 e2e23 e2e24 e2e25 e2e26 e2e27 e2e28 e2e29 e2e30 e2e31 e2e32 e2e33 e2e34 e2e36 e2e37 e2e38 e2e39 e2e41 e2e42 e2e43 e2e44 e2e45; do
   e2e "$t"
 done
 # Diese beiden ändern die App (Version hochzählen, Datei entfernen) und laufen deshalb auf einer Kopie
